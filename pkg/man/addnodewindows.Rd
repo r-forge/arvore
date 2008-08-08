@@ -53,7 +53,7 @@ function() {
 			title <- "ÁrvoRe - Novo Nodo"
 			tkwm.title(addnodeWindow,title)
 			
-			NomeVar <- tclVar("New Node")
+			NomeVar <- tclVar("Novo Nodo")
 			NomeEntryWidget <- tkentry(addnodeWindow,width="20",textvariable=NomeVar)
 			tkgrid(tklabel(addnodeWindow,text="Nome do nodo"))
 			tkgrid(NomeEntryWidget)
@@ -124,7 +124,7 @@ function() {
 				tkfocus(tt)
 			}
 			
-			Cancel.but <-tkbutton(addnodeWindow,text=" Cancel ",command=OnCancel)
+			Cancel.but <-tkbutton(addnodeWindow,text=" Cancelar ",command=OnCancel)
 			tkbind(addnodeWindow, "<Escape>",OnCancel)
 	
 			tkgrid(OK.but, Cancel.but, sticky = "s", padx = 5, pady = 5)

@@ -83,7 +83,7 @@ function() {
 				tkfocus(utilityWindow)
 			}
 		}
-		OK.but <-tkbutton(utilityWindow,text="   OK   ",command=OnOK)
+		OK.but <-tkbutton(utilityWindow,text="    OK    ",command=OnOK)
 		
 		OnCancel <- function()
 		{
@@ -91,7 +91,7 @@ function() {
 			tkfocus(tt)
 		}
 		
-		Cancel.but <-tkbutton(utilityWindow,text=" Cancel ",command=OnCancel)
+		Cancel.but <-tkbutton(utilityWindow,text=" Cancelar ",command=OnCancel)
 		
 		tkbind(entry.Value, "<Return>",OnOK)
 		tkbind(entry.Value.effectiveness, "<Return>",OnOK)

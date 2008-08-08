@@ -53,8 +53,8 @@ function(TheTree) {
 	tkgrid(frameButton, sticky = "swe")
 		
 	# Image setings.
-	g.imgHeight <- 600/2
-	g.imgWidth <- 800/2
+	g.imgHeight <- 480
+	g.imgWidth <- 640
 		
 	# Canvas window configurations
 	C.Height <- min(c(g.imgHeight, 768))
@@ -96,26 +96,26 @@ function(TheTree) {
 	img.type <- "png"
 	img.quality <- 90
 		
-	plot.it.to.image <- function(AllTreatCost, AllTreatEffectiveness, treatments.colors.plot,
+	plot.it.to.image <- function(AllTreatEffectiveness, AllTreatCost, treatments.colors.plot,
 										treatments.label.plot,
 										.Filename, img.type = "png", img.quality = 90,
-										img.width = 400, img.height = 400, ...) {
+										img.width = 600, img.height = 600, ...) {
 			
 		if (img.type == "png") {
 			png(file=.Filename, width = img.width, height = img.height, bg = "white", restoreConsole = FALSE)
 					Graphtitle <- "Plano Custo-Efetividade"
 					xlabel <- "Efetividade"
 					ylabel <- "Custo"
-					plot(AllTreatEffectiveness, AllTreatCost, 
-							col = treatments.colors.plot, pch = "*", main = Graphtitle,
+					plot(c(0,AllTreatEffectiveness), c(0,AllTreatCost), 
+							col = c(0,treatments.colors.plot), pch = "*", main = Graphtitle,
 							xlab = xlabel, ylab = ylabel)
-					smartlegend( x="left", y= "top", inset=0,                             #smartlegend parameters
+					for (i in 1:length(AllTreatEffectiveness)) {
+						lines(c(0,AllTreatEffectiveness[i]), c(0,AllTreatCost[i]), col = treatments.colors.plot[i])
+					}
+					smartlegend( x="center", y= "top", inset=0,                             #smartlegend parameters
 					             legend = c(treatments.label.plot), #legend parameters
 						     fill=c(treatments.colors.plot),                        #legend parameters
 						     bg = "gray")
-					for (i in length(AllTreatEffectiveness)) {
-						lines(c(0,AllTreatEffectiveness[i]), c(0,AllTreatCost[i]), col = treatments.colors.plot[i])
-					}
 			dev.off()
 		} else {
 			if (img.type == "jpg") {
@@ -125,16 +125,16 @@ function(TheTree) {
 					Graphtitle <- "Plano Custo-Efetividade"
 					xlabel <- "Efetividade"
 					ylabel <- "Custo"
-					plot(AllTreatEffectiveness, AllTreatCost, 
-							col = treatments.colors.plot, pch = "*", main = Graphtitle,
+					plot(c(0,AllTreatEffectiveness), c(0,AllTreatCost), 
+							col = c(0,treatments.colors.plot), pch = "*", main = Graphtitle,
 							xlab = xlabel, ylab = ylabel)
-					smartlegend( x="left", y= "top", inset=0,                             #smartlegend parameters
+					for (i in 1:length(AllTreatEffectiveness)) {
+						lines(c(0,AllTreatEffectiveness[i]), c(0,AllTreatCost[i]), col = treatments.colors.plot[i])
+					}
+					smartlegend( x="center", y= "top", inset=0,                             #smartlegend parameters
 					             legend = c(treatments.label.plot), #legend parameters
 						     fill=c(treatments.colors.plot),                        #legend parameters
 						     bg = "gray")
-					for (i in length(AllTreatEffectiveness)) {
-						lines(c(0,AllTreatEffectiveness[i]), c(0,AllTreatCost[i]), col = treatments.colors.plot[i])
-					}
 				dev.off()
 			} else {
 				bmp(filename = .Filename, width = img.width, height = img.height,
@@ -143,16 +143,16 @@ function(TheTree) {
 					Graphtitle <- "Plano Custo-Efetividade"
 					xlabel <- "Efetividade"
 					ylabel <- "Custo"
-					plot(AllTreatEffectiveness, AllTreatCost, 
-							col = treatments.colors.plot, pch = "*", main = Graphtitle,
+					plot(c(0,AllTreatEffectiveness), c(0,AllTreatCost), 
+							col = c(0,treatments.colors.plot), pch = "*", main = Graphtitle,
 							xlab = xlabel, ylab = ylabel)
-					smartlegend( x="left", y= "top", inset=0,                             #smartlegend parameters
+					for (i in 1:length(AllTreatEffectiveness)) {
+						lines(c(0,AllTreatEffectiveness[i]), c(0,AllTreatCost[i]), col = treatments.colors.plot[i])
+					}
+					smartlegend( x="center", y= "top", inset=0,                             #smartlegend parameters
 					             legend = c(treatments.label.plot), #legend parameters
 						     fill=c(treatments.colors.plot),                        #legend parameters
 						     bg = "gray")
-					for (i in length(AllTreatEffectiveness)) {
-						lines(c(0,AllTreatEffectiveness[i]), c(0,AllTreatCost[i]), col = treatments.colors.plot[i])
-					}
 				dev.off()
 			}
 		}
@@ -310,7 +310,7 @@ function(TheTree) {
 				
 		OK.but <-tkbutton(frameLower,text="OK", width=.Width.but, height=.Height.but, command=OnOK)
 		tkbind(exportImgGraphWindow, "<Return>",OnOK)
-		Cancel.but <-tkbutton(frameLower,text="Cancel", width=.Width.but, height=.Height.but, command=OnCancel)
+		Cancel.but <-tkbutton(frameLower,text="Cancelar", width=.Width.but, height=.Height.but, command=OnCancel)
 		tkbind(exportImgGraphWindow, "<Escape>",OnCancel)
 		tkgrid(OK.but, Cancel.but, sticky = "s", padx = 5, pady = 5, columnspan = 2, sticky = "s")
 			

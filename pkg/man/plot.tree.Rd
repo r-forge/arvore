@@ -45,7 +45,6 @@ plot.tree(TheTree, line.type = "squared", show.probability = TRUE, show.payoffs 
 function(TheTree, line.type = "squared", show.probability = TRUE, 
 						show.payoffs = TRUE, show.notes = FALSE, node.name.font.size = 12,
 						payoffs.font.size = 0, notes.font.size = 0) {
-
 	require(grid)
 	
 	MatrixTheTree <- convert2matrix(TheTree)

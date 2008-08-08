@@ -161,7 +161,7 @@ function(TheTree) {
 		.Height.but <- 1
 		
 		OK.but <-tkbutton(FrameLower,text="OK", width=.Width.but, height=.Height.but, command=OnOK)
-		Cancel.but <-tkbutton(FrameLower,text="Cancel", width=.Width.but, height=.Height.but, command=OnCancel)
+		Cancel.but <-tkbutton(FrameLower,text="Cancelar", width=.Width.but, height=.Height.but, command=OnCancel)
 		
 		tkbind(setvalueWindow, "<Escape>",OnCancel)
 		

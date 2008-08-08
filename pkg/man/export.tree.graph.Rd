@@ -175,7 +175,7 @@ function(...) {
 	
 	OK.but <-tkbutton(frameLower,text="OK", width=.Width.but, height=.Height.but, command=OnOK)
 	tkbind(exportgraphWindow, "<Return>",OnOK)
-	Cancel.but <-tkbutton(frameLower,text="Cancel", width=.Width.but, height=.Height.but, command=OnCancel)
+	Cancel.but <-tkbutton(frameLower,text="Cancelar", width=.Width.but, height=.Height.but, command=OnCancel)
 	tkbind(exportgraphWindow, "<Escape>",OnCancel)
 	tkgrid(OK.but, Cancel.but, sticky = "s", padx = 5, pady = 5, columnspan = 2, sticky = "s")
 	

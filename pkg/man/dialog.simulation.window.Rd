@@ -66,7 +66,7 @@ function(...) {
 		if (node.type == "M") {
 ############ MARKOV ############
 			dialogsimulationwindow <- tktoplevel()
-			title <- "ÁrvoRe - Markov Simulation"
+			title <- "ÁrvoRe - Simulação Markov"
 			tkwm.title(dialogsimulationwindow,title)
 			
 			Seedvar <- tclVar(0)
@@ -132,7 +132,7 @@ function(...) {
 				}
 			}
 				
-			OK.but <-tkbutton(dialogsimulationwindow,text="   OK   ",command=OnOK)
+			OK.but <-tkbutton(dialogsimulationwindow,text="    OK    ",command=OnOK)
 				
 			tkbind(Seed.Value, "<Return>",OnOK)
 			tkbind(Individuos.Value, "<Return>",OnOK)
@@ -144,7 +144,7 @@ function(...) {
 				tkfocus(tt)
 			}
 				
-			Cancel.but <-tkbutton(dialogsimulationwindow, text=" Cancel ", command=OnCancel)
+			Cancel.but <-tkbutton(dialogsimulationwindow, text=" Cancelar ", command=OnCancel)
 			tkbind(dialogsimulationwindow, "<Escape>",OnCancel)
 		
 			tkgrid(OK.but, Cancel.but, sticky = "s", padx = 5, pady = 5)
@@ -155,7 +155,7 @@ function(...) {
 			if (node.type == "D") {
 ############ DECISION ############
 				dialogsimulationwindow <- tktoplevel()
-				title <- "ÁrvoRe - Markov Simulation"
+				title <- "ÁrvoRe - Simulação Markov"
 				tkwm.title(dialogsimulationwindow,title)
 				
 				Seedvar <- tclVar(0)
@@ -289,7 +289,7 @@ function(...) {
 					}
 				}
 					
-				OK.but <-tkbutton(dialogsimulationwindow,text="   OK   ",command=OnOK)
+				OK.but <-tkbutton(dialogsimulationwindow,text="    OK    ",command=OnOK)
 					
 				tkbind(Seed.Value, "<Return>",OnOK)
 				tkbind(Individuos.Value, "<Return>",OnOK)
@@ -301,7 +301,7 @@ function(...) {
 					tkfocus(tt)
 				}
 					
-				Cancel.but <-tkbutton(dialogsimulationwindow, text=" Cancel ", command=OnCancel)
+				Cancel.but <-tkbutton(dialogsimulationwindow, text=" Cancelar ", command=OnCancel)
 				tkbind(dialogsimulationwindow, "<Escape>",OnCancel)
 			
 				tkgrid(OK.but, Cancel.but, sticky = "s", padx = 5, pady = 5)
@@ -312,7 +312,7 @@ function(...) {
 				if (node.type == "C") {
 ############ CHANCE ############
 					dialogsimulationwindow <- tktoplevel()
-					title <- "ÁrvoRe - Markov Simulation"
+					title <- "ÁrvoRe - Simulação Markov"
 					tkwm.title(dialogsimulationwindow,title)
 					
 					Seedvar <- tclVar(0)
@@ -375,7 +375,7 @@ function(...) {
 						}
 					}
 						
-					OK.but <-tkbutton(dialogsimulationwindow,text="   OK   ",command=OnOK)
+					OK.but <-tkbutton(dialogsimulationwindow,text="    OK    ",command=OnOK)
 						
 					tkbind(Seed.Value, "<Return>",OnOK)
 					tkbind(Trialss.Value, "<Return>",OnOK)
@@ -387,7 +387,7 @@ function(...) {
 						tkfocus(tt)
 					}
 						
-					Cancel.but <-tkbutton(dialogsimulationwindow, text=" Cancel ", command=OnCancel)
+					Cancel.but <-tkbutton(dialogsimulationwindow, text=" Cancelar ", command=OnCancel)
 					tkbind(dialogsimulationwindow, "<Escape>",OnCancel)
 				
 					tkgrid(OK.but, Cancel.but, sticky = "s", padx = 5, pady = 5)

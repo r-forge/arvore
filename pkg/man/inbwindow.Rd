@@ -37,6 +37,7 @@ inbwindow(TheTree)
 ## The function is currently defined as
 function(TheTree) {
 	require(abind)
+	require(gplots)
 	
 	plotINBtableWindow <- tktoplevel()
 	title <- "ÁrvoRe - INB"
@@ -192,6 +193,10 @@ function(TheTree) {
 					lines(wtp, inb[i,], col = treatments.colors.plot[i])
 					points(wtp, inb[i,], col = treatments.colors.plot[i], pch = "*")
 				}
+				smartlegend( x="left", y= "top", inset=0,                             #smartlegend parameters
+				             legend = c(treatments.label.plot), #legend parameters
+						     fill=c(treatments.colors.plot),                        #legend parameters
+						     bg = "transparent")				
 			dev.off()
 		} else {
 			if (img.type == "jpg") {
@@ -224,6 +229,11 @@ function(TheTree) {
 							lines(wtp, inb[i,], col = treatments.colors.plot[i])
 							points(wtp, inb[i,], col = treatments.colors.plot[i], pch = "*")
 						}
+						smartlegend( x="left", y= "top", inset=0,                             #smartlegend parameters
+						             legend = c(treatments.label.plot), #legend parameters
+								     fill=c(treatments.colors.plot),                        #legend parameters
+								     bg = "transparent")				
+						
 				dev.off()
 			} else {
 				bmp(filename = .Filename, width = img.width, height = img.height,
@@ -255,13 +265,393 @@ function(TheTree) {
 							lines(wtp, inb[i,], col = treatments.colors.plot[i])
 							points(wtp, inb[i,], col = treatments.colors.plot[i], pch = "*")
 						}
+						smartlegend( x="left", y= "top", inset=0,                             #smartlegend parameters
+						             legend = c(treatments.label.plot), #legend parameters
+								     fill=c(treatments.colors.plot),                        #legend parameters
+								     bg = "transparent")				
+						
 				dev.off()
 			}
 		}
 	}
-		
+	
+	build.cedata <- function() {
+		# The CEDATA
+		respostaListbox <- Data.CEA$Node.N[as.numeric(tkcurselection(tl))+1]
+		Data.alternative <- Data.CEA[Data.CEA$Node.N != respostaListbox,]
+		Data.standart <- Data.CEA[Data.CEA$Node.N == respostaListbox, ]
+			
+		ans <- data.frame( 	Strategy = as.character(Data.standart$Node.name),
+							Cost = Data.standart$Mean.Cost, 
+							Incr.Cost = 0, 
+							Effectiveness = Data.standart$Mean.Effectiveness, 
+							Incr.Eff = 0, 
+							CE.ratio = Data.standart$Mean.Cost / Data.standart$Mean.Effectiveness, 
+							ICER = NA
+							)
+			
+		for (i in 1:dim(Data.alternative)[1]) {
+			ans.line <- data.frame( Strategy = as.character(Data.alternative$Node.name[i]),
+							Cost = Data.alternative$Mean.Cost[i], 
+							Incr.Cost = Data.alternative$Mean.Cost[i] - Data.standart$Mean.Cost, 
+							Effectiveness = Data.alternative$Mean.Effectiveness[i], 
+							Incr.Eff = Data.alternative$Mean.Effectiveness[i] - Data.standart$Mean.Effectiveness, 
+							CE.ratio = Data.alternative$Mean.Cost[i] / Data.alternative$Mean.Effectiveness[i], 
+							ICER = ((Data.alternative$Mean.Cost[i] - Data.standart$Mean.Cost) /
+										(Data.alternative$Mean.Effectiveness[i] - Data.standart$Mean.Effectiveness))
+							)
+			ans <- abind(ans, ans.line, along = 1)
+				
+		}
+		ans <- as.data.frame(ans)
+# 		print(ans)
+			
+		ans$Incr.Cost <- as.numeric(as.character(ans$Incr.Cost))
+		ans$Incr.Eff <- as.numeric(as.character(ans$Incr.Eff))
+		ans$Strategy <- as.character(ans$Strategy)
+		return(ans)
+	}	
 	# The CEDATA
 			respostaListbox <- Data.CEA$Node.N[as.numeric(tkcurselection(tl))+1]
+			Data.alternative <- Data.CEA[Data.CEA$Node.N != respostaListbox,]
+			Data.standart <- Data.CEA[Data.CEA$Node.N == respostaListbox, ]
+			
+			ans <- data.frame( 	Strategy = as.character(Data.standart$Node.name),
+								Cost = Data.standart$Mean.Cost, 
+								Incr.Cost = 0, 
+								Effectiveness = Data.standart$Mean.Effectiveness, 
+								Incr.Eff = 0, 
+								CE.ratio = Data.standart$Mean.Cost / Data.standart$Mean.Effectiveness, 
+								ICER = NA
+								)
+			
+			for (i in 1:dim(Data.alternative)[1]) {
+				ans.line <- data.frame( Strategy = as.character(Data.alternative$Node.name[i]),
+								Cost = Data.alternative$Mean.Cost[i], 
+								Incr.Cost = Data.alternative$Mean.Cost[i] - Data.standart$Mean.Cost, 
+								Effectiveness = Data.alternative$Mean.Effectiveness[i], 
+								Incr.Eff = Data.alternative$Mean.Effectiveness[i] - Data.standart$Mean.Effectiveness, 
+								CE.ratio = Data.alternative$Mean.Cost[i] / Data.alternative$Mean.Effectiveness[i], 
+								ICER = ((Data.alternative$Mean.Cost[i] - Data.standart$Mean.Cost) /
+											(Data.alternative$Mean.Effectiveness[i] - Data.standart$Mean.Effectiveness))
+								)
+				ans <- abind(ans, ans.line, along = 1)
+				
+			}
+			ans <- as.data.frame(ans)
+# 			print(ans)
+			
+			ans$Incr.Cost <- as.numeric(as.character(ans$Incr.Cost))
+			ans$Incr.Eff <- as.numeric(as.character(ans$Incr.Eff))
+			ans$Strategy <- as.character(ans$Strategy)
+			
+	# end CEDATA
+		
+	plot.it.to.image(WTParray, ans, treatments.colors.plot, treatments.label.plot = ans$Strategy, 
+								.Filename = .Filename, img.type = img.type,
+								img.width = g.imgWidth, img.height = g.imgHeight)
+			
+	image1 <- tclVar()
+	tcl("image","create","photo",image1,file=.Filename)
+	tkcreate(fCanvas, "image", g.imgWidth/2, g.imgHeight/2, image = image1, anchor = "center")
+	tkconfigure(fCanvas, scrollregion = c(0,0,g.imgWidth,g.imgHeight))
+						
+	OnExportGraphic <- function() {
+		
+		LIVal <- as.numeric(tclvalue(LIvar))
+# 		print(LIVal)
+		LSVal <- as.numeric(tclvalue(LSvar))
+# 		print(LSVal)
+		NPVal <- as.numeric(tclvalue(NPvar))
+# 		print(NPVal)
+		
+		do.it <- TRUE
+		if ( !(is.numeric(LIVal)) || (is.na(LIVal)) ) {
+			do.it <- FALSE
+			msg <- paste("O valor fornecido para o limite inferior não é válido.")
+			tkmessageBox(message=msg)
+			tkfocus(plotINBtableWindow)
+		}
+		if ( !(is.numeric(LSVal)) || (is.na(LSVal)) ) {
+			do.it <- FALSE
+			msg <- paste("O valor fornecido para o limite superior não é válido.")
+			tkmessageBox(message=msg)
+			tkfocus(plotINBtableWindow)
+		}
+		if ( !do.it && ( LIVal > LSVal )) {
+			do.it <- FALSE
+			msg <- paste("O limite inferior deve ser menor que o limite superior.")
+			tkmessageBox(message=msg)
+			tkfocus(plotINBtableWindow)
+		}
+		if ( !(is.numeric(NPVal)) || (is.na(NPVal)) || (NPVal < 2) ) {
+			do.it <- FALSE
+			NPVal <- as.integer(NPVal)
+			msg <- paste("O valor fornecido para o número de intervalos não é válido.")
+			tkmessageBox(message=msg)
+			tkfocus(plotINBtableWindow)
+		}
+		
+		if (do.it) {
+			file.remove(.Filename)
+			WTParray <- seq(LIVal, LSVal, round( (LSVal - LIVal ) / NPVal))
+			
+			respostaListbox <- Data.CEA$Node.N[as.numeric(tkcurselection(tl))+1]
+			
+			Data.alternative <- Data.CEA[Data.CEA$Node.N != respostaListbox,]
+			Data.standart <- Data.CEA[Data.CEA$Node.N == respostaListbox, ]
+			
+			ans <- data.frame( 	Strategy = Data.standart$Node.name,
+								Cost = Data.standart$Mean.Cost, 
+								Incr.Cost = 0, 
+								Effectiveness = Data.standart$Mean.Effectiveness, 
+								Incr.Eff = 0, 
+								CE.ratio = Data.standart$Mean.Cost / Data.standart$Mean.Effectiveness, 
+								ICER = NA
+								)
+				
+			for (i in 1:dim(Data.alternative)[1]) {
+				ans.line <- data.frame( Strategy = Data.alternative$Node.name[i],
+								Cost = Data.alternative$Mean.Cost[i], 
+								Incr.Cost = Data.alternative$Mean.Cost[i] - Data.standart$Mean.Cost, 
+								Effectiveness = Data.alternative$Mean.Effectiveness[i], 
+								Incr.Eff = Data.alternative$Mean.Effectiveness[i] - Data.standart$Mean.Effectiveness, 
+								CE.ratio = Data.alternative$Mean.Cost[i] / Data.alternative$Mean.Effectiveness[i], 
+								ICER = ((Data.alternative$Mean.Cost[i] - Data.standart$Mean.Cost) /
+											(Data.alternative$Mean.Effectiveness[i] - Data.standart$Mean.Effectiveness))
+								)
+				ans <- abind(ans, ans.line, along = 1)
+					
+			}
+			cedata <- as.data.frame(ans)
+	# 			print(ans)
+				
+			cedata$Incr.Cost <- as.numeric(as.character(cedata$Incr.Cost))
+			cedata$Incr.Eff <- as.numeric(as.character(cedata$Incr.Eff))
+			cedata$Strategy <- as.character(cedata$Strategy)		
+			
+# 			print(cedata)
+			
+			exportImgGraphWindow <- tktoplevel()
+			title <- "ÁrvoRe - Exportar Imagem"
+			tkwm.title(exportImgGraphWindow,title)
+			
+			framePlot <- tkframe(exportImgGraphWindow)
+			frameUpper <- tkframe(framePlot, relief="groove", borderwidth=0)
+			frameUpperLeft <- tkframe(frameUpper, relief="groove", borderwidth=2)
+			frameUpperRigth <- tkframe(frameUpper, relief="groove", borderwidth=2)
+			frameLower <- tkframe(framePlot, relief="groove", borderwidth=0)
+			
+			tkgrid( tklabel(frameUpper,text="Formato de imagem"),sticky="n", columnspan = 2)
+					
+			rbValue <- tclVar("jpg")
+			QualityValue <- tclVar("90")
+					
+			rb1 <- tkradiobutton(frameUpper)
+			tkconfigure(rb1,variable=rbValue,value="bmp")
+			tkgrid(	tklabel(frameUpperLeft,text="Bitmap .bmp "),rb1, sticky = "ne")
+					
+			rb2 <- tkradiobutton(frameUpper)
+			tkconfigure(rb2,variable=rbValue,value="jpg")
+			tkgrid(	tklabel(frameUpperLeft,text="Jpeg .jpg "),rb2, sticky = "ne")
+					
+			rb3 <- tkradiobutton(frameUpper)
+			tkconfigure(rb3,variable=rbValue,value="png")
+			tkgrid(	tklabel(frameUpperLeft,text="Portable network graphics .png "),rb3, sticky = "ne")
+					
+			SliderValueLabel <- tklabel(frameUpperRigth, text = as.character(tclvalue(QualityValue)) )
+			sliderlabel <- tklabel(frameUpperRigth, text = "Valor da qualidade de imagem : ")
+			sliderlabel2 <- tklabel(frameUpperRigth,text = "\%")
+			tkgrid(sliderlabel, SliderValueLabel, sliderlabel2)
+			tkconfigure(SliderValueLabel, textvariable = QualityValue)
+			sliderImg <- tkscale(frameUpperRigth, from = 100, to = 1,
+			                   showvalue = F, variable = QualityValue,
+			                   resolution = 1, orient = "horizontal")
+			tkgrid(sliderImg,sticky="ew")
+			
+		    ### Image size settings ###
+			numericSpinBox <- tkwidget(frameUpperRigth, "SpinBox", editable=TRUE, range = c(100,10000,1), width = 5)
+			labeldigits <- tklabel(frameUpperRigth,text="Altura da imagem")
+			tkgrid(labeldigits, numericSpinBox, sticky = "nw", padx = 5, pady = 5)
+			tcl(numericSpinBox, "setvalue", paste("@", g.imgHeight,sep = ""))
+			
+			numericSpinBox2 <- tkwidget(frameUpperRigth, "SpinBox", editable=TRUE, range = c(100,10000,1), width = 5)
+			labeldigits <- tklabel(frameUpperRigth,text="Largura da imagem")
+			tkgrid(labeldigits, numericSpinBox2, sticky = "nw", padx = 5, pady = 5)
+			tcl(numericSpinBox2, "setvalue", paste("@", g.imgWidth,sep = ""))
+			
+			tkgrid(frameUpperLeft, frameUpperRigth,sticky="ns")
+			tkgrid(frameUpper,sticky="ns")
+			tkgrid(frameLower,sticky="ns")
+			
+			Onformat <- function() {
+				ansVar <- as.character(tclvalue(rbValue))
+				if (ansVar != "jpg") {
+					tkconfigure(SliderValueLabel, state = "disabled")
+					tkconfigure(sliderlabel, state = "disabled")
+					tkconfigure(sliderlabel2, state = "disabled")
+					tkconfigure(SliderValueLabel, state = "disabled")
+					tkconfigure(sliderImg, state = "disabled")
+				} else {
+					tkconfigure(SliderValueLabel, state = "normal")
+					tkconfigure(sliderlabel, state = "normal")
+					tkconfigure(sliderlabel2, state = "normal")
+					tkconfigure(SliderValueLabel, state = "normal")
+					tkconfigure(sliderImg, state = "normal")
+				}
+			}
+					
+			OnOK <- function(...)
+			{
+				img.height <- as.numeric(tclvalue(tcl(numericSpinBox,"getvalue")))
+				if ((is.numeric(img.height) )&&(!is.na(img.height))) g.imgHeight <- img.height
+				
+				img.width <- as.numeric(tclvalue(tcl(numericSpinBox2,"getvalue")))
+				if ((is.numeric(img.width) )&&(!is.na(img.width))) g.imgWidth <- img.width
+				
+				ImgFormatselected <- as.character(tclvalue(rbValue))
+				ImgQualityselected <- as.numeric(as.character(tclvalue(QualityValue)))
+				if (ImgFormatselected == "png") {
+					.Filename <- tclvalue(tkgetSaveFile(filetypes="{{Portable network graphics Image Files} {.png}} {{All files} *}"))
+					if (!nchar(.Filename))
+						tkfocus(plotINBtableWindow)
+					else {
+						ans <- substr(.Filename,nchar(.Filename)-3,nchar(.Filename))
+						if ( ans != ".png" ) .Filename <- paste(.Filename, ".png", sep="")
+								
+						if (!file.exists(.Filename)) file.remove(.Filename)
+						
+						plot.it.to.image(WTParray, cedata, treatments.colors.plot, treatments.label.plot = cedata$Strategy,
+											.Filename = .Filename, img.type = ImgFormatselected,
+											img.width = g.imgWidth, img.height = g.imgHeight)
+					}
+				} else {
+					if (ImgFormatselected == "jpg") {
+						.Filename <- tclvalue(tkgetSaveFile(filetypes="{{Jpeg Image Files} {.jpg}} {{All files} *}"))
+						if (!nchar(.Filename))
+							tkfocus(plotINBtableWindow)
+						else {
+							ans <- substr(.Filename,nchar(.Filename)-3,nchar(.Filename))
+							if ( ans != ".jpg" ) .Filename <- paste(.Filename, ".jpg", sep="")
+											
+							if (!file.exists(.Filename)) file.remove(.Filename)
+									
+							plot.it.to.image(WTParray, cedata, treatments.colors.plot, treatments.label.plot = cedata$Strategy,
+												.Filename = .Filename, img.type = ImgFormatselected,
+												img.quality = ImgQualityselected,
+												img.width = g.imgWidth, img.height = g.imgHeight)
+						}
+					} else {
+						.Filename <- tclvalue(tkgetSaveFile(filetypes="{{Bitmap Image Files} {.bmp}} {{All files} *}"))
+						if (!nchar(.Filename))
+							tkfocus(plotINBtableWindow)
+						else {
+							ans <- substr(.Filename,nchar(.Filename)-3,nchar(.Filename))
+							if ( ans != ".bmp" ) .Filename <- paste(.Filename, ".bmp", sep="")
+									
+							if (!file.exists(.Filename)) file.remove(.Filename)
+							
+							plot.it.to.image(WTParray, cedata, treatments.colors.plot, treatments.label.plot = cedata$Strategy,
+												.Filename = .Filename, img.type = ImgFormatselected,
+												img.width = g.imgWidth, img.height = g.imgHeight)
+						}
+					}
+				}
+				tkdestroy(exportImgGraphWindow)
+				tkwm.deiconify(plotINBtableWindow)
+				tkfocus(plotINBtableWindow)
+			}
+					
+			OnCancel <- function()
+			{
+				tkdestroy(exportImgGraphWindow)
+				tkwm.deiconify(plotINBtableWindow)
+				tkfocus(plotINBtableWindow)
+			}
+					
+			.Width.but <- 10
+			.Height.but <- 1
+					
+			OK.but <-tkbutton(frameLower,text="OK", width=.Width.but, height=.Height.but, command=OnOK)
+			tkbind(exportImgGraphWindow, "<Return>",OnOK)
+			Cancel.but <-tkbutton(frameLower,text="Cancelar", width=.Width.but, height=.Height.but, command=OnCancel)
+			tkbind(exportImgGraphWindow, "<Escape>",OnCancel)
+			tkgrid(OK.but, Cancel.but, sticky = "s", padx = 5, pady = 5, columnspan = 2, sticky = "s")
+				
+			tkbind(rb1, "<Enter>",Onformat)
+			tkbind(rb2, "<Enter>",Onformat)
+			tkbind(rb3, "<Enter>",Onformat)
+			tkbind(rb1, "<Leave>",Onformat)
+			tkbind(rb2, "<Leave>",Onformat)
+			tkbind(rb3, "<Leave>",Onformat)
+			
+			tkgrid(framePlot)
+			tkfocus(exportImgGraphWindow)
+	# 		posiciona.janela.no.mouse(exportImgGraphWindow)
+		}
+	}
+	
+	Build.INB <- function(wtp, cedata, to.export = FALSE) {
+				inb <- cedata$Incr.Eff[1] * wtp - cedata$Incr.Cost[1]
+				for (i in 2:dim(cedata)[1]) {
+					balde.inb <- cedata$Incr.Eff[i] * wtp - cedata$Incr.Cost[i]
+					inb <- rbind(inb, balde.inb)
+				}
+				
+				inb <- t(inb)
+				inb <- cbind(wtp, inb)
+				if (to.export) {
+					inb <- as.data.frame(inb)
+# 					print(c("WTP", as.character(cedata$Strategy)))
+					names(inb) <- c("WTP", as.character(cedata$Strategy))
+				} else {
+					colnames(inb) <- c("WTP", cedata$Strategy)
+				}
+# 				print(inb)
+		
+	}
+	
+	OnExportText <- function() {
+		LIVal <- as.numeric(tclvalue(LIvar))
+# 		print(LIVal)
+		LSVal <- as.numeric(tclvalue(LSvar))
+# 		print(LSVal)
+		NPVal <- as.numeric(tclvalue(NPvar))
+# 		print(NPVal)
+		
+		do.it <- TRUE
+		if ( !(is.numeric(LIVal)) || (is.na(LIVal)) ) {
+			do.it <- FALSE
+			msg <- paste("O valor fornecido para o limite inferior não é válido.")
+			tkmessageBox(message=msg)
+			tkfocus(plotINBtableWindow)
+		}
+		if ( !(is.numeric(LSVal)) || (is.na(LSVal)) ) {
+			do.it <- FALSE
+			msg <- paste("O valor fornecido para o limite superior não é válido.")
+			tkmessageBox(message=msg)
+			tkfocus(plotINBtableWindow)
+		}
+		if ( !do.it && ( LIVal > LSVal )) {
+			do.it <- FALSE
+			msg <- paste("O limite inferior deve ser menor que o limite superior.")
+			tkmessageBox(message=msg)
+			tkfocus(plotINBtableWindow)
+		}
+		if ( !(is.numeric(NPVal)) || (is.na(NPVal)) || (NPVal < 2) ) {
+			do.it <- FALSE
+			NPVal <- as.integer(NPVal)
+			msg <- paste("O valor fornecido para o número de intervalos não é válido.")
+			tkmessageBox(message=msg)
+			tkfocus(plotINBtableWindow)
+		}
+		
+		if (do.it) {
+			file.remove(.Filename)
+			WTParray <- seq(LIVal, LSVal, round( (LSVal - LIVal ) / NPVal))
+			
+			respostaListbox <- Data.CEA$Node.N[as.numeric(tkcurselection(tl))+1]
+			
 			Data.alternative <- Data.CEA[Data.CEA$Node.N != respostaListbox,]
 			Data.standart <- Data.CEA[Data.CEA$Node.N == respostaListbox, ]
 			
@@ -290,200 +680,19 @@ function(TheTree) {
 			ans <- as.data.frame(ans)
 # 			print(ans)
 			
-			ans$Incr.Cost <- as.numeric(as.character(ans$Incr.Cost))
-			ans$Incr.Eff <- as.numeric(as.character(ans$Incr.Eff))
-
-	# end CEDATA
-		
-	plot.it.to.image(WTParray, ans, treatments.colors.plot, treatments.label.plot, 
-								.Filename = .Filename, img.type = img.type,
-								img.width = g.imgWidth, img.height = g.imgHeight)
+		ans$Incr.Cost <- as.numeric(as.character(ans$Incr.Cost))
+		ans$Incr.Eff <- as.numeric(as.character(ans$Incr.Eff))
+		ans$Strategy <- as.character(ans$Strategy)
 			
-	image1 <- tclVar()
-	tcl("image","create","photo",image1,file=.Filename)
-	tkcreate(fCanvas, "image", g.imgWidth/2, g.imgHeight/2, image = image1, anchor = "center")
-	tkconfigure(fCanvas, scrollregion = c(0,0,g.imgWidth,g.imgHeight))
-						
-	OnExportGraphic <- function(...) {
-		exportImgGraphWindow <- tktoplevel()
-		title <- "ÁrvoRe - Exportar Imagem"
-		tkwm.title(exportImgGraphWindow,title)
-		
-		framePlot <- tkframe(exportImgGraphWindow)
-		frameUpper <- tkframe(framePlot, relief="groove", borderwidth=0)
-		frameUpperLeft <- tkframe(frameUpper, relief="groove", borderwidth=2)
-		frameUpperRigth <- tkframe(frameUpper, relief="groove", borderwidth=2)
-		frameLower <- tkframe(framePlot, relief="groove", borderwidth=0)
-		
-		tkgrid( tklabel(frameUpper,text="Formato de imagem"),sticky="n", columnspan = 2)
-				
-		rbValue <- tclVar("jpg")
-		QualityValue <- tclVar("90")
-				
-		rb1 <- tkradiobutton(frameUpper)
-		tkconfigure(rb1,variable=rbValue,value="bmp")
-		tkgrid(	tklabel(frameUpperLeft,text="Bitmap .bmp "),rb1, sticky = "ne")
-				
-		rb2 <- tkradiobutton(frameUpper)
-		tkconfigure(rb2,variable=rbValue,value="jpg")
-		tkgrid(	tklabel(frameUpperLeft,text="Jpeg .jpg "),rb2, sticky = "ne")
-				
-		rb3 <- tkradiobutton(frameUpper)
-		tkconfigure(rb3,variable=rbValue,value="png")
-		tkgrid(	tklabel(frameUpperLeft,text="Portable network graphics .png "),rb3, sticky = "ne")
-				
-		SliderValueLabel <- tklabel(frameUpperRigth, text = as.character(tclvalue(QualityValue)) )
-		sliderlabel <- tklabel(frameUpperRigth, text = "Valor da qualidade de imagem : ")
-		sliderlabel2 <- tklabel(frameUpperRigth,text = "\%")
-		tkgrid(sliderlabel, SliderValueLabel, sliderlabel2)
-		tkconfigure(SliderValueLabel, textvariable = QualityValue)
-		sliderImg <- tkscale(frameUpperRigth, from = 100, to = 1,
-		                   showvalue = F, variable = QualityValue,
-		                   resolution = 1, orient = "horizontal")
-		tkgrid(sliderImg,sticky="ew")
-		
-	    ### Image size settings ###
-		numericSpinBox <- tkwidget(frameUpperRigth, "SpinBox", editable=TRUE, range = c(100,10000,1), width = 5)
-		labeldigits <- tklabel(frameUpperRigth,text="Altura da imagem")
-		tkgrid(labeldigits, numericSpinBox, sticky = "nw", padx = 5, pady = 5)
-		tcl(numericSpinBox, "setvalue", paste("@", g.imgHeight,sep = ""))
-		
-		numericSpinBox2 <- tkwidget(frameUpperRigth, "SpinBox", editable=TRUE, range = c(100,10000,1), width = 5)
-		labeldigits <- tklabel(frameUpperRigth,text="Largura da imagem")
-		tkgrid(labeldigits, numericSpinBox2, sticky = "nw", padx = 5, pady = 5)
-		tcl(numericSpinBox2, "setvalue", paste("@", g.imgWidth,sep = ""))
-		
-		tkgrid(frameUpperLeft, frameUpperRigth,sticky="ns")
-		tkgrid(frameUpper,sticky="ns")
-		tkgrid(frameLower,sticky="ns")
-		
-		Onformat <- function() {
-			ansVar <- as.character(tclvalue(rbValue))
-			if (ansVar != "jpg") {
-				tkconfigure(SliderValueLabel, state = "disabled")
-				tkconfigure(sliderlabel, state = "disabled")
-				tkconfigure(sliderlabel2, state = "disabled")
-				tkconfigure(SliderValueLabel, state = "disabled")
-				tkconfigure(sliderImg, state = "disabled")
-			} else {
-				tkconfigure(SliderValueLabel, state = "normal")
-				tkconfigure(sliderlabel, state = "normal")
-				tkconfigure(sliderlabel2, state = "normal")
-				tkconfigure(SliderValueLabel, state = "normal")
-				tkconfigure(sliderImg, state = "normal")
-			}
+		inb <- ans$Incr.Eff[1] * WTParray - ans$Incr.Cost[1]
+		for (i in 2:dim(ans)[1]) {
+			balde.inb <- ans$Incr.Eff[i] * WTParray - ans$Incr.Cost[i]
+			inb <- rbind(inb, balde.inb)
 		}
-				
-		OnOK <- function(...)
-		{
-			img.height <- as.numeric(tclvalue(tcl(numericSpinBox,"getvalue")))
-			if ((is.numeric(img.height) )&&(!is.na(img.height))) g.imgHeight <- img.height
-			
-			img.width <- as.numeric(tclvalue(tcl(numericSpinBox2,"getvalue")))
-			if ((is.numeric(img.width) )&&(!is.na(img.width))) g.imgWidth <- img.width
-			
-			ImgFormatselected <- as.character(tclvalue(rbValue))
-			ImgQualityselected <- as.numeric(as.character(tclvalue(QualityValue)))
-			if (ImgFormatselected == "png") {
-				.Filename <- tclvalue(tkgetSaveFile(filetypes="{{Portable network graphics Image Files} {.png}} {{All files} *}"))
-				if (!nchar(.Filename))
-					tkfocus(plotINBtableWindow)
-				else {
-					ans <- substr(.Filename,nchar(.Filename)-3,nchar(.Filename))
-					if ( ans != ".png" ) .Filename <- paste(.Filename, ".png", sep="")
-							
-					if (!file.exists(.Filename)) file.remove(.Filename)
+		rownames(inb) <- ans$Strategy
+		colnames(inb) <- paste("WTP = ", WTParray,sep = "")
+		Original.Dada <- inb
 					
-					plot.it.to.image(wtp, cedata, treatments.colors.plot, treatments.label.plot,
-										.Filename = .Filename, img.type = ImgFormatselected,
-										img.width = g.imgWidth, img.height = g.imgHeight)
-				}
-			} else {
-				if (ImgFormatselected == "jpg") {
-					.Filename <- tclvalue(tkgetSaveFile(filetypes="{{Jpeg Image Files} {.jpg}} {{All files} *}"))
-					if (!nchar(.Filename))
-						tkfocus(plotINBtableWindow)
-					else {
-						ans <- substr(.Filename,nchar(.Filename)-3,nchar(.Filename))
-						if ( ans != ".jpg" ) .Filename <- paste(.Filename, ".jpg", sep="")
-										
-						if (!file.exists(.Filename)) file.remove(.Filename)
-								
-						plot.it.to.image(wtp, cedata, treatments.colors.plot, treatments.label.plot,
-											.Filename = .Filename, img.type = ImgFormatselected,
-											img.quality = ImgQualityselected,
-											img.width = g.imgWidth, img.height = g.imgHeight)
-					}
-				} else {
-					.Filename <- tclvalue(tkgetSaveFile(filetypes="{{Bitmap Image Files} {.bmp}} {{All files} *}"))
-					if (!nchar(.Filename))
-						tkfocus(plotINBtableWindow)
-					else {
-						ans <- substr(.Filename,nchar(.Filename)-3,nchar(.Filename))
-						if ( ans != ".bmp" ) .Filename <- paste(.Filename, ".bmp", sep="")
-								
-						if (!file.exists(.Filename)) file.remove(.Filename)
-						
-						plot.it.to.image(wtp, cedata, treatments.colors.plot, treatments.label.plot,
-											.Filename = .Filename, img.type = ImgFormatselected,
-											img.width = g.imgWidth, img.height = g.imgHeight)
-					}
-				}
-			}
-			tkdestroy(exportImgGraphWindow)
-			tkwm.deiconify(plotINBtableWindow)
-			tkfocus(plotINBtableWindow)
-		}
-				
-		OnCancel <- function()
-		{
-			tkdestroy(exportImgGraphWindow)
-			tkwm.deiconify(plotINBtableWindow)
-			tkfocus(plotINBtableWindow)
-		}
-				
-		.Width.but <- 10
-		.Height.but <- 1
-				
-		OK.but <-tkbutton(frameLower,text="OK", width=.Width.but, height=.Height.but, command=OnOK)
-		tkbind(exportImgGraphWindow, "<Return>",OnOK)
-		Cancel.but <-tkbutton(frameLower,text="Cancel", width=.Width.but, height=.Height.but, command=OnCancel)
-		tkbind(exportImgGraphWindow, "<Escape>",OnCancel)
-		tkgrid(OK.but, Cancel.but, sticky = "s", padx = 5, pady = 5, columnspan = 2, sticky = "s")
-			
-		tkbind(rb1, "<Enter>",Onformat)
-		tkbind(rb2, "<Enter>",Onformat)
-		tkbind(rb3, "<Enter>",Onformat)
-		tkbind(rb1, "<Leave>",Onformat)
-		tkbind(rb2, "<Leave>",Onformat)
-		tkbind(rb3, "<Leave>",Onformat)
-		
-		tkgrid(framePlot)
-		tkfocus(exportImgGraphWindow)
-# 		posiciona.janela.no.mouse(exportImgGraphWindow)
-	}
-	
-	Build.INB <- function(wtp, cedata, to.export = FALSE) {
-				inb <- cedata$Incr.Eff[1] * wtp - cedata$Incr.Cost[1]
-				for (i in 2:dim(cedata)[1]) {
-					balde.inb <- cedata$Incr.Eff[i] * wtp - cedata$Incr.Cost[i]
-					inb <- rbind(inb, balde.inb)
-				}
-				
-				inb <- t(inb)
-				inb <- cbind(wtp, inb)
-				if (to.export) {
-					inb <- as.data.frame(inb)
-# 					print(c("WTP", as.character(cedata$Strategy)))
-					names(inb) <- c("WTP", as.character(cedata$Strategy))
-				} else {
-					colnames(inb) <- c("WTP", cedata$Strategy)
-				}
-# 				print(inb)
-		
-	}
-	
-	OnExportText <- function(Original.Dada) {
 		filetypeWindow <- tktoplevel()
 		title <- "ÁrvoRe - Exportar"
 		tkwm.title(filetypeWindow,title)
@@ -515,10 +724,10 @@ function(TheTree) {
 				ans <- substr(fileName,nchar(fileName)-3,nchar(fileName))
 				if ( fileextChoice == ".csv" ) {
 					if (ans == ".csv") {
-						write.csv2(Original.Dada, file = fileName, row.names = FALSE)
+						write.csv2(Original.Dada, file = fileName, row.names = TRUE)
 					} else {
 						fileName <- paste(fileName, ".csv", sep = "")
-						write.csv2(Original.Dada, file = fileName, row.names = FALSE)
+						write.csv2(Original.Dada, file = fileName, row.names = TRUE)
 					}
 				}
 				if ( fileextChoice == ".txt" ) {
@@ -550,7 +759,7 @@ function(TheTree) {
 		.Height.but <- 1
 		
 		OK.but <-tkbutton(frameLower,text="OK", width=.Width.but, height=.Height.but, command=OnOK)
-		Cancel.but <-tkbutton(frameLower,text="Cancel", width=.Width.but, height=.Height.but, command=OnCancel)
+		Cancel.but <-tkbutton(frameLower,text="Cancelar", width=.Width.but, height=.Height.but, command=OnCancel)
 		
 		tkgrid(OK.but, Cancel.but, sticky = "s", padx = 5, pady = 5)
 		
@@ -561,6 +770,7 @@ function(TheTree) {
 		tkbind(filetypeWindow, "<Escape>",OnOK)
 			
 		tkfocus(filetypeWindow)
+		}
 	}	
 
 	OnOKINB <- function() {
@@ -635,10 +845,11 @@ function(TheTree) {
 			
 			ans$Incr.Cost <- as.numeric(as.character(ans$Incr.Cost))
 			ans$Incr.Eff <- as.numeric(as.character(ans$Incr.Eff))
+			ans$Strategy <- as.character(ans$Strategy)
 			
 # 			INB <- ans$Incr.Eff * WTParray - Incr.Cost
 			
-			plot.it.to.image(WTParray, ans, treatments.colors.plot, treatments.label.plot, 
+			plot.it.to.image(WTParray, ans, treatments.colors.plot, treatments.label.plot = ans$Strategy, 
 										.Filename = .Filename, img.type = img.type,
 										img.width = g.imgWidth, img.height = g.imgHeight)
 					
@@ -665,7 +876,7 @@ function(TheTree) {
 	tkgrid(OK.WTP.but, sticky = "s", padx = 5, pady = 5, columnspan = 2)
 	
 	OK.but <- tkbutton(frameButton,text="OK", width=.Width.but, height=.Height.but, command=OnCancel)
-	ExportText.but <- tkbutton(frameButton,text="Relatório", width=.Width.but, height=.Height.but, command = function() OnExportText(Build.INB(WTParray, ans, to.export = TRUE)) )
+	ExportText.but <- tkbutton(frameButton,text="Relatório", width=.Width.but, height=.Height.but, command = function() OnExportText() )
 	Export.but <- tkbutton(frameButton,text="Exportar", width=.Width.but, height=.Height.but, command=OnExportGraphic)
 	
 	tkgrid(OK.but, ExportText.but, Export.but, sticky = "s", padx = 5, pady = 5)

@@ -166,7 +166,7 @@ function(...) {
 		.Height.but <- 1
 
 		OK.but <-tkbutton(frameLower,text="OK", width=.Width.but, height=.Height.but, command=OnOkAdd)
-		Cancel.but <-tkbutton(frameLower,text="Cancel", width=.Width.but, height=.Height.but, command=OnCanceladd)
+		Cancel.but <-tkbutton(frameLower,text="Cancelar", width=.Width.but, height=.Height.but, command=OnCanceladd)
 		
 		tkgrid(OK.but, Cancel.but, sticky = "s", padx = 5, pady = 5)
 		
@@ -310,7 +310,7 @@ function(...) {
 		.Height.but <- 1
 
 		OK.but <-tkbutton(frameLower,text="OK", width=.Width.but, height=.Height.but, command=OnOkAdd)
-		Cancel.but <-tkbutton(frameLower,text="Cancel", width=.Width.but, height=.Height.but, command=OnCanceladd)
+		Cancel.but <-tkbutton(frameLower,text="Cancelar", width=.Width.but, height=.Height.but, command=OnCanceladd)
 		
 		tkgrid(OK.but, Cancel.but, sticky = "s", padx = 5, pady = 5)
 		

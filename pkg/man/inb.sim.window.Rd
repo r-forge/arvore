@@ -113,7 +113,7 @@ function(Alltreatmentstable) {
 		
 		OnOK <- function() {
 			respostaListbox <- n.treat[as.numeric(tkcurselection(tl))+1]
-			WTPVal <- as.integer(tclvalue(WTPvar))
+			WTPVal <- as.numeric(tclvalue(WTPvar))
 			
 			Data.alternative.Cost <- subset(Data.CEA.Cost, NT != respostaListbox)			
 			Data.standart.Cost <- subset(Data.CEA.Cost, NT == respostaListbox)
@@ -142,7 +142,7 @@ function(Alltreatmentstable) {
 				var.inb <- ( 	WTPVal^2
 							) * Data.alternative.Effectiveness$Variance[i] +
 							Data.alternative.Cost$Variance[i] -
-							2 * WTPVal * ( 00000 )
+							2 * WTPVal * ( Data.alternative.Cost$CovDcDe[i] )
 				alfa <- 0.05 # the significance
 				
 				ans.line <- data.frame( Strategy = Data.alternative.Cost$Treatment[i],
@@ -164,7 +164,7 @@ function(Alltreatmentstable) {
 			
 # 			print(ans)
 			
-			displayInTable(as.matrix(ans), title="ICER - Análise de Custo-Efetividade",
+			displayInTable(as.matrix(ans), title="INB - Análise de Custo-Efetividade",
 						height=10,width=8,nrow=dim(ans)[1],ncol=dim(ans)[2], 
 						titlerows = FALSE, titlecols = TRUE, returntt = FALSE)
 	    }

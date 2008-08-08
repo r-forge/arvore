@@ -60,7 +60,7 @@ function(...) {
 	    frameFontPlot <- tkwidget(frameRight, "labelframe", borderwidth = 2, relief = "groove", text = titleframe)
 	    
 	    ### Method settings ###
-	    metodos <- c("Simple Decision (simple payoff)", "Cost-Effectiveness")
+	    metodos <- c("Decisão simples (simple payoff)", "Custo-Efetividade")
 	    method.arvore <- c("SD", "CE")
 	    
 	    methodBox <- tkwidget(frameUpper, "ComboBox", editable=FALSE, values=metodos, width = 30)
@@ -206,7 +206,7 @@ function(...) {
     	}
     			
 		OK.but <-tkbutton(frameLower,text="OK", width=.Width.but, height=.Height.but, command=OnOK)
-		Cancel.but <-tkbutton(frameLower,text="Cancel", width=.Width.but, height=.Height.but, command=OnCancel)
+		Cancel.but <-tkbutton(frameLower,text="Cancelar", width=.Width.but, height=.Height.but, command=OnCancel)
 		
 		tkgrid(OK.but, Cancel.but, sticky = "s", padx = 5, pady = 5)
 		tkbind(propertiesWindow, "<Return>",OnOK)

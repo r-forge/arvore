@@ -190,7 +190,7 @@ function(matrix1,title="",height=-1,width=-1,nrow=-1,ncol=-1,
 		.Height.but <- 1
 		
 		OK.but <-tkbutton(frameLower,text="OK", width=.Width.but, height=.Height.but, command=OnOK)
-		Cancel.but <-tkbutton(frameLower,text="Cancel", width=.Width.but, height=.Height.but, command=OnCancel)
+		Cancel.but <-tkbutton(frameLower,text="Cancelar", width=.Width.but, height=.Height.but, command=OnCancel)
 		
 		tkgrid(OK.but, Cancel.but, sticky = "s", padx = 5, pady = 5)
 		

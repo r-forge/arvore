@@ -190,7 +190,7 @@ function(...) {
 			tkadd(analysisMenu,"separator")
 			tkadd(analysisMenu,"command",label="Resumo da ACE (ICER)...",command=function() acewindow(TheTree))
 			tkadd(analysisMenu,"command",label="Plano Custo-Efetividade",command=function() planoacewindow(TheTree))
-			tkadd(analysisMenu,"command",label="Net Benefit (INB)",command=function() inbwindow(TheTree))
+			tkadd(analysisMenu,"command",label="Rede de Benefício (INB)",command=function() inbwindow(TheTree))
 			tkadd(analysisMenu,"separator")
 			tkadd(analysisMenu,"command",label="Resumo da árvore",command=function() show.summary.tree.window())
 			tkadd(analysisMenu,"separator")

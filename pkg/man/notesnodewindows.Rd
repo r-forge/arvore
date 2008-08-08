@@ -65,7 +65,7 @@ function(...) {
 				refreshF5()
 				tkfocus(tt)
 			}
-			OK.but <-tkbutton(notesWindow, text="   OK   ", command=OnOK)
+			OK.but <-tkbutton(notesWindow, text="    OK    ", command=OnOK)
 			tkbind(entry.Value, "<Return>", OnOK)
 			
 			OnCancel <- function()
@@ -74,7 +74,7 @@ function(...) {
 				tkfocus(tt)
 			}
 
-			Cancel.but <-tkbutton(notesWindow, text=" Cancel ", command=OnCancel)
+			Cancel.but <-tkbutton(notesWindow, text=" Cancelar ", command=OnCancel)
 			tkbind(notesWindow, "<Escape>", OnCancel)
 
 			tkgrid(OK.but, Cancel.but, sticky = "s", padx = 5, pady = 5)

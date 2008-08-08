@@ -133,6 +133,9 @@ function(TheTree) {
 			}
 			ans <- as.data.frame(ans)
 			
+			names(ans) <- c("Procedimento", "Custo médio", "Custo adicional", "Efetividade média",
+							"Efetividade adicional", "Razão C-E", "ICER")
+							
 			displayInTable(as.matrix(ans), title="Análise de Custo-Efetividade",
 						height=10,width=8,nrow=dim(ans)[1],ncol=dim(ans)[2], 
 						titlerows = FALSE, titlecols = TRUE, returntt = FALSE)

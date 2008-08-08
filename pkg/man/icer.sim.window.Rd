@@ -110,6 +110,27 @@ function(Alltreatmentstable) {
 			Data.alternative.CE <- subset(Data.CEA.CE, NT != respostaListbox)			
 			Data.standart.CE <- subset(Data.CEA.CE, NT == respostaListbox)
 			
+# 			print(Data.alternative.Cost)
+# 			print(Data.standart.Cost)
+# 			print(Data.alternative.Effectiveness)
+# 			print(Data.standart.Effectiveness)
+# 			print(Data.alternative.CE)
+# 			print(Data.standart.CE)
+			
+# 			Data.alternative.Cost$Mean <- as.numeric(as.character(Data.alternative.Cost$Mean))
+# 			Data.alternative.Effectiveness$Mean <- as.numeric(as.character(Data.alternative.Effectiveness$Mean))
+# 			Data.alternative.Cost$Variance <- as.numeric(as.character(Data.alternative.Cost$Variance))
+# 			Data.alternative.Effectiveness$Variance <- as.numeric(as.character(Data.alternative.Effectiveness$Variance))
+# 			Data.alternative.Cost$CovDcDe <- as.numeric(as.character(Data.alternative.Cost$CovDcDe))
+# 			Data.alternative.Effectiveness$CovDcDe <- as.numeric(as.character(Data.alternative.Effectiveness$CovDcDe))
+# 			Data.standart.Cost$Mean <- as.numeric(as.character(Data.standart.Cost$Mean))
+# 			Data.standart.Effectiveness$Mean <- as.numeric(as.character(Data.standart.Effectiveness$Mean))
+# 			Data.standart.Cost$Variance <- as.numeric(as.character(Data.standart.Cost$Variance))
+# 			Data.standart.Effectiveness$Variance <- as.numeric(as.character(Data.standart.Effectiveness$Variance))
+# 			Data.standart.Cost$CovDcDe <- as.numeric(as.character(Data.standart.Cost$CovDcDe))
+# 			Data.standart.Effectiveness$CovDcDe <- as.numeric(as.character(Data.standart.Effectiveness$CovDcDe))
+			
+			
 			ans <- data.frame( 	Strategy = Data.standart.Cost$Treatment[1],
 								Cost = Data.standart.Cost$Mean[1], 
 								Incr.Cost = NA, 
@@ -125,17 +146,31 @@ function(Alltreatmentstable) {
 			
 			for (i in 1:dim(Data.alternative.Cost)[1]) {
 				
+				ans$Strategy <- as.character(ans$Strategy)
+				ans$Cost <- as.numeric(as.character(ans$Cost))
+				ans$Incr.Cost <- as.numeric(as.character(ans$Incr.Cost))
+				ans$Effectiveness <- as.numeric(as.character(ans$Effectiveness))
+				ans$Incr.Eff. <- as.numeric(as.character(ans$Incr.Eff.))
+				ans$CE.ratio <- as.numeric(as.character(ans$CE.ratio))
+				ans$ICER <- as.numeric(as.character(ans$ICER))
+				ans$Var.ICER <- as.numeric(as.character(ans$Var.ICER))
+				ans$Sd.ICER <- as.numeric(as.character(ans$Sd.ICER))
+				ans$LL_IC95 <- as.numeric(as.character(ans$LL_IC95))
+				ans$UL_IC95 <- as.numeric(as.character(ans$UL_IC95))
+				
+				
 				icer <- (Data.alternative.Cost$Mean[i] - Data.standart.Cost$Mean[1]) /
 										(Data.alternative.Effectiveness$Mean[i] - Data.standart.Effectiveness$Mean[1])
 										
-				var.icer <- ( 	icer
-							) *
-								(
-									( Data.alternative.Effectiveness$Variance[i] / Data.alternative.Effectiveness$Mean[i]^2 ) +
-									( Data.alternative.Cost$Variance[i] / Data.alternative.Cost$Mean[i]^2 ) -
-									2 * ( 00000 ) / 
+				var.icer <- ( icer ) * (
+							( Data.alternative.Effectiveness$Variance[i] / Data.alternative.Effectiveness$Mean[i]^2 ) +
+							( Data.alternative.Cost$Variance[i] / Data.alternative.Cost$Mean[i]^2 ) -
+							2 * ( Data.alternative.Cost$CovDcDe[i] ) / 
 										( Data.alternative.Effectiveness$Mean[i] / Data.alternative.Cost$Mean[i] )
 							)
+				print(var.icer)
+				
+				var.icer <- as.numeric(as.character(var.icer))
 				
 				ans.line <- data.frame( Strategy = Data.alternative.Cost$Treatment[i],
 								Cost = Data.alternative.Cost$Mean[i], 
@@ -145,11 +180,12 @@ function(Alltreatmentstable) {
 								CE.ratio = Data.alternative.Cost$Mean[i] / Data.alternative.Effectiveness$Mean[i], 
 								ICER = icer,
 								Var.ICER = var.icer,
-								Sd.ICER = var.icer^0.5,
+								Sd.ICER = (var.icer)^(1/2),
 								LL_IC95 = icer - qnorm(1 - 0.05/2) * var.icer^0.5,
 								UL_IC95 = icer + qnorm(1 - 0.05/2) * var.icer^0.5
 								)
-				ans <- abind(ans, ans.line, along = 1)
+				ans <- rbind(ans, ans.line) #, along = 1)
+				ans <- as.data.frame(ans)
 				
 			}
 			ans <- as.data.frame(ans)
@@ -159,6 +195,7 @@ function(Alltreatmentstable) {
 			displayInTable(as.matrix(ans), title="ICER - Análise de Custo-Efetividade",
 						height=10,width=8,nrow=dim(ans)[1],ncol=dim(ans)[2], 
 						titlerows = FALSE, titlecols = TRUE, returntt = FALSE)
+			rm(ans)
 	    }
 			
 	    OnCancel <- function() {

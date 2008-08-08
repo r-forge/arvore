@@ -110,9 +110,9 @@ function(...) {
 						tkfocus(tt)
 					}
 					
-					OK.but <-tkbutton(destinyWindow,text="   OK   ",command=OnOK)
+					OK.but <-tkbutton(destinyWindow,text="   OK     ",command=OnOK)
 					tkbind(destinyWindow, "<Return>",OnOK)
-					Cancel.but <-tkbutton(destinyWindow,text=" Cancel ",command=OnCancel)
+					Cancel.but <-tkbutton(destinyWindow,text=" Cancelar ",command=OnCancel)
 					tkbind(destinyWindow, "<Escape>",OnCancel)
 			
 					tkgrid(OK.but, Cancel.but, sticky = "s", padx = 5, pady = 5)

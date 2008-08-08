@@ -52,21 +52,19 @@ function(TheTree, markov.propertiesMAT, markov.termination, initial.coort = 1000
 	MatrixTheTree <- convert2matrix(TheTree)
 	x <- MatrixTheTree$x								# Structure matrix
 	y <- MatrixTheTree$y								# Node name matrix
-	typeMAT <- MatrixTheTree$typeMAT					# Node type matrix
+	#~ typeMAT <- MatrixTheTree$typeMAT					# Node type matrix
 	utilityMAT <- MatrixTheTree$utilityMAT				# Node Cost matrix 
 	effectivenessMAT <- MatrixTheTree$effectivenessMAT	# Node effectiveness matrix
 	probMAT <- MatrixTheTree$probMAT					# Node probability matrix
 	destinyMAT <- MatrixTheTree$destinyMAT				# Terminal node destiny matrix
-
+	
 	num.col.x <- dim(x)[2]
 	num.lin.x <- dim(x)[1]
 
 	SummaryTreeTable <- subset(TheTree, Level == 2)
 	col.pos <- as.numeric(SummaryTreeTable$Level)
 	MARKOV.states <- as.numeric(SummaryTreeTable$Node.N) # MARKOV.states
-# 	print(MARKOV.states)
 	MARKOV.states.init.prob <- as.numeric(SummaryTreeTable$Prob) # MARKOV.states
-# 	print(MARKOV.states.init.prob)
 	MARKOV.states.init.cost.rwd <- as.numeric(markov.propertiesMAT$Initial.cost) # MARKOV.states
 	MARKOV.states.incr.cost.rwd <- as.numeric(markov.propertiesMAT$Incremental.cost) # MARKOV.states
 	MARKOV.states.final.cost.rwd <- as.numeric(markov.propertiesMAT$Final.cost) # MARKOV.states
@@ -75,14 +73,16 @@ function(TheTree, markov.propertiesMAT, markov.termination, initial.coort = 1000
 	MARKOV.states.final.effectiveness.rwd <- as.numeric(markov.propertiesMAT$Final.effectiveness) # MARKOV.states
 	
 	MARKOV.states.names <- SummaryTreeTable$Node.name
-# 	print(MARKOV.states.names)
+	
+    # Aplica desconto nas payoffs de quem não volta para a árvore associada.
+    MARKOV.discount.costs <- SummaryTreeTable$Payoff1
+    MARKOV.discount.effectiveness <- SummaryTreeTable$Payoff2
 	
 	# listas para comportar matrizes associadas a cada Markov state
 	MARKOV.states.arvores <- list()
 	MARKOV.states.rotulos <- list()
 	MARKOV.states.destino <- list()
 	MARKOV.states.probs <- list()
-	MARKOV.states.utilities <- list()
 	MARKOV.states.costs <- list()
 	MARKOV.states.effectiveness <- list()
 	
@@ -96,7 +96,7 @@ function(TheTree, markov.propertiesMAT, markov.termination, initial.coort = 1000
 		sub.probMAT <- probMAT[selected.lines, col.pos[i]:num.col.x]
 		sub.utilityMAT <- utilityMAT[selected.lines, col.pos[i]:num.col.x]
 		sub.effectivenessMAT <- effectivenessMAT[selected.lines, col.pos[i]:num.col.x]
-		sub.typeMAT <- utilityMAT[selected.lines, col.pos[i]:num.col.x]
+		#~ sub.typeMAT <- utilityMAT[selected.lines, col.pos[i]:num.col.x]
 		sub.destiny <- destinyMAT[selected.lines]
 		
 		# se a fragmentação resulta em matriz linha, então é preciso definir que isso é
@@ -109,7 +109,7 @@ function(TheTree, markov.propertiesMAT, markov.termination, initial.coort = 1000
 			sub.probMAT <- matrix(1.0, 1, n.mat)
 			sub.utilityMAT <- matrix(c(0,sub.utilityMAT), 1, n.mat)
 			sub.effectivenessMAT <- matrix(c(0,sub.effectivenessMAT), 1, n.mat)
-			sub.typeMAT <- matrix(c("D",sub.typeMAT), 1, n.mat)
+			#~ sub.typeMAT <- matrix(c("D",sub.typeMAT), 1, n.mat)
 		} else {
 			sub.probMAT[,1] <- 1.0	# Agora o nodo raiz recebe prob = 1.
 		}
@@ -117,7 +117,7 @@ function(TheTree, markov.propertiesMAT, markov.termination, initial.coort = 1000
 		# ajusta custo e efetividade: serão acumulados através dos nodos.
 		sub.utilityMAT <- apply(sub.utilityMAT, 1, sum)
 		sub.effectivenessMAT <- apply(sub.effectivenessMAT, 1, sum)
-		
+
 		# abaixo se manda cada matriz de sub-árvore para suas listas.
 		MARKOV.states.arvores[[i]] <- sub.x
 		MARKOV.states.rotulos[[i]] <- sub.y
@@ -125,7 +125,6 @@ function(TheTree, markov.propertiesMAT, markov.termination, initial.coort = 1000
 		MARKOV.states.probs[[i]] <- sub.probMAT
 		MARKOV.states.costs[[i]] <- sub.utilityMAT
 		MARKOV.states.effectiveness[[i]] <- sub.effectivenessMAT
-		MARKOV.states.utilities[[i]] <- sub.utilityMAT / sub.effectivenessMAT
 	}
 
 	# ajusta nomes nas listas.
@@ -135,30 +134,17 @@ function(TheTree, markov.propertiesMAT, markov.termination, initial.coort = 1000
 	names(MARKOV.states.probs) <- names(MARKOV.states.arvores)
 	names(MARKOV.states.costs) <- names(MARKOV.states.arvores)
 	names(MARKOV.states.effectiveness) <- names(MARKOV.states.arvores)
-	names(MARKOV.states.utilities) <- names(MARKOV.states.arvores)
 
-# 	print(" MOSTRANDO... MARKOV.states.arvores")
-# 	print(MARKOV.states.arvores)
-# 	assign("MARKOV.states.arvores", MARKOV.states.arvores, globalenv())
-# 	print(" MOSTRANDO... MARKOV.states.rotulos")
-# 	print(MARKOV.states.rotulos)
-# 	assign("MARKOV.states.rotulos", MARKOV.states.rotulos, globalenv())
-# 	print(" MOSTRANDO... MARKOV.states.destino")
-# 	print(MARKOV.states.destino)
-# 	assign("MARKOV.states.destino", MARKOV.states.destino, globalenv())
-# 	print(" MOSTRANDO... MARKOV.states.probs")
-# 	print(MARKOV.states.probs)
-# 	assign("MARKOV.states.probs", MARKOV.states.probs, globalenv())
-# 	print(" MOSTRANDO... MARKOV.states.utilities")
-# 	print(MARKOV.states.utilities)
-# 	assign("MARKOV.states.utilities", MARKOV.states.utilities, globalenv())
-# 	print(" MOSTRANDO... MARKOV.states.costs")
-# 	print(MARKOV.states.costs)
-# 	assign("MARKOV.states.costs", MARKOV.states.costs, globalenv())
-# 	print(" MOSTRANDO... MARKOV.states.effectiveness")
-# 	print(MARKOV.states.effectiveness)
-# 	assign("MARKOV.states.effectiveness", MARKOV.states.effectiveness, globalenv())
-	
+	# ajuste para quem não retorna à árvore associada
+    for (i in 1:length(MARKOV.states.names)) {
+		MARKOV.states.costs[[as.character(MARKOV.states[i])]] <- MARKOV.states.costs[[as.character(MARKOV.states[i])]] -
+        	MARKOV.discount.costs[as.numeric(i)] + 
+        	MARKOV.discount.costs[as.numeric(MARKOV.states.destino[[as.character(MARKOV.states[i])]])]
+		MARKOV.states.effectiveness[[as.character(MARKOV.states[i])]] <- MARKOV.states.effectiveness[[as.character(MARKOV.states[i])]] -
+        	MARKOV.discount.effectiveness[as.numeric(i)] + 
+        	MARKOV.discount.effectiveness[as.numeric(MARKOV.states.destino[[as.character(MARKOV.states[i])]])]
+    }
+
 	# Busca por estados absorventes
 	if (absorventstatedeath == 1) {
 		nodos.test.absorvent <- names(MARKOV.states.destino)
@@ -166,9 +152,7 @@ function(TheTree, markov.propertiesMAT, markov.termination, initial.coort = 1000
 		
 		for (i in nodos.test.absorvent) {
 			destinyofthisstate <- MARKOV.states.destino[[i]]	
-# 			print(destinyofthisstate)
 			checkdestiny <- ( destinyofthisstate == i )
-# 			print(checkdestiny)
 			if ( sum(checkdestiny) == length(destinyofthisstate) ) {
 # 				cat("Ele é absorvente '", i, "' chamado '", MARKOV.states.rotulos[[i]][1,1],"'\n")
 				absorventstate <- c(absorventstate, i)
@@ -196,13 +180,13 @@ function(TheTree, markov.propertiesMAT, markov.termination, initial.coort = 1000
 	
 	# control variables
 	.stop.sim <- TRUE
-	.stage <- 0
-	.stage.reward <- 0
-	.stage.cost <- 0
-	.stage.eff <- 0
-	.total.reward <- 0	# ajusta a soma do ciclo zero para zero.
-	.total.cost <- 0
-	.total.eff <- 0
+	.stage <- 1
+	.stage.cost <- sum(Coorte.Cost)
+	.stage.eff <- sum(Coorte.Effec)
+	.stage.reward <- .stage.cost
+	.total.cost <- .stage.cost
+	.total.eff <- .stage.eff
+	.total.reward <- .stage.cost	# ajusta a soma do ciclo zero para zero.
 
 	while( ! eval( parse(text = markov.termination) ) ) {
 		.stage <- .stage + 1
@@ -211,7 +195,7 @@ function(TheTree, markov.propertiesMAT, markov.termination, initial.coort = 1000
 		Coorte.Effec.LINE <- matrix(0,1,initial.coort)
 		
 		for (i in 1:num.markov.states ) {
-			positions <- which(Coorte.Ind[.stage,] == MARKOV.states[i])
+			positions <- which(Coorte.Ind[.stage - 1,] == MARKOV.states[i])
 			indvs <- length(positions)
 			if ( indvs != 0 ) {
 				arvore <- MARKOV.states.arvores[[as.character(MARKOV.states[i])]]
@@ -220,7 +204,6 @@ function(TheTree, markov.propertiesMAT, markov.termination, initial.coort = 1000
 				probabilidades <- MARKOV.states.probs[[as.character(MARKOV.states[i])]]
 				custos <- MARKOV.states.costs[[as.character(MARKOV.states[i])]]
 				efetividades <- MARKOV.states.effectiveness[[as.character(MARKOV.states[i])]]
-				utilidades <- MARKOV.states.utilities[[as.character(MARKOV.states[i])]]
 				sorteado <- runif(indvs,0,1)
 				linprobs <- cumsum(apply(probabilidades, 1, prod)) # observa a probabilidade de cada ramo acontecer numa runif
 				valn <- length(linprobs)
@@ -234,6 +217,13 @@ function(TheTree, markov.propertiesMAT, markov.termination, initial.coort = 1000
 			Coorte.Cost.LINE[1,positions] <- ans.cost
 			Coorte.Effec.LINE[1,positions] <- ans.effectiveness
 		}
+		.stage.cost <- sum(Coorte.Cost.LINE)
+		.stage.eff <- sum(Coorte.Effec.LINE)
+		.stage.reward <- .stage.cost
+		.total.cost <- .total.cost + .stage.cost
+		.total.eff <- .total.eff + .stage.eff
+		.total.reward <- .total.cost	# ajusta a soma do ciclo zero para zero.
+		
 		Coorte.Ind <- rbind(Coorte.Ind, Coorte.Ind.LINE)
 		Coorte.Cost <- rbind(Coorte.Cost, Coorte.Cost.LINE)
 		Coorte.Effec <- rbind(Coorte.Effec, Coorte.Effec.LINE)
@@ -241,41 +231,25 @@ function(TheTree, markov.propertiesMAT, markov.termination, initial.coort = 1000
 	
 	# Definições para a soma de valores no final da simulação (the final reward)
 	for (i in num.markov.states:1) {
-		positions <- which( Coorte.Ind[.stage + 1,] <= MARKOV.states[i] )
-		Coorte.Cost[.stage + 1,positions] <- MARKOV.states.final.cost.rwd[i]
-		Coorte.Effec[.stage + 1,positions] <- MARKOV.states.final.effectiveness.rwd[i]
+		positions <- which( Coorte.Ind[.stage,] <= MARKOV.states[i] )
+		Coorte.Cost[.stage,positions] <- MARKOV.states.final.cost.rwd[i] + Coorte.Cost[.stage,positions] 
+		Coorte.Effec[.stage,positions] <- MARKOV.states.final.effectiveness.rwd[i] + Coorte.Effec[.stage,positions]
 	}
 		
-# 	print(" MOSTRANDO... Coorte.Ind")
-# 	print(Coorte.Ind)
-# 	print(" MOSTRANDO... Coorte.Cost")
-# 	print(Coorte.Cost)
-# 	print(" MOSTRANDO... Coorte.Effec")
-# 	print(Coorte.Effec)
-
 	# Aplica NA para individuos dos estados absorventes considerados morte
 	if (absorventstatedeath == 1) {
 		SurvivalCurve <- replace(Coorte.Ind, which( Coorte.Ind == absorventstate), NA)
 # 		Coorte.Ind <- replace(Coorte.Ind, which( Coorte.Ind == absorventstate), NA)
-# 		Coorte.Cost2 <- replace(Coorte.Ind, which( SurvivalCurve == NA), NA)
-# 		Coorte.Effec2 <- replace(Coorte.Ind, which( SurvivalCurve == NA), NA)
+# 		Coorte.Cost <- replace(Coorte.Cost, which( SurvivalCurve == NA), NA)
+		Coorte.Effec <- replace(Coorte.Effec, which( is.na(SurvivalCurve)), NA)
 		SurvivalCurve <- apply(!is.na(SurvivalCurve), 1, sum)
 		SurvivalCurve <- as.array(SurvivalCurve)
 		names(SurvivalCurve) <- paste("Cycle ", 0:(length(SurvivalCurve)-1), sep = "")
-# 		print(SurvivalCurve)
 	} else {
 		SurvivalCurve <- rep( dim(Coorte.Ind)[2], dim(Coorte.Ind)[1])
 		names(SurvivalCurve) <- paste("Cycle ", 0:(length(SurvivalCurve)-1), sep = "")
-# 		print(SurvivalCurve)
 	}
 	
-# 	print(" MOSTRANDO... Coorte.Ind")
-# 	print(Coorte.Ind)
-# 	print(" MOSTRANDO... Coorte.Cost")
-# 	print(Coorte.Cost)
-# 	print(" MOSTRANDO... Coorte.Effec")
-# 	print(Coorte.Effec)
-
 	ans <- list(Path = Coorte.Ind, Cost = Coorte.Cost, Effectiveness = Coorte.Effec, Survival = SurvivalCurve)
 	return(ans)	# And return the result
   }

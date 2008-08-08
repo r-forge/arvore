@@ -66,7 +66,7 @@ function() {
 				tkfocus(nodenameWindow)
 			}
 		}
-		OK.but <-tkbutton(nodenameWindow,text="   OK   ",command=OnOK)
+		OK.but <-tkbutton(nodenameWindow,text="    OK    ",command=OnOK)
 		tkbind(entry.Value, "<Return>",OnOK)
 		
 		OnCancel <- function()
@@ -75,7 +75,7 @@ function() {
 			tkfocus(tt)
 		}
 		
-		Cancel.but <-tkbutton(nodenameWindow, text=" Cancel ", command=OnCancel)
+		Cancel.but <-tkbutton(nodenameWindow, text=" Cancelar ", command=OnCancel)
 		tkbind(nodenameWindow, "<Escape>",OnCancel)
 
 		tkgrid(OK.but, Cancel.but, sticky = "s", padx = 5, pady = 5)

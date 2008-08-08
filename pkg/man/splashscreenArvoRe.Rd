@@ -47,6 +47,7 @@ function() {
 		} 
 	}
 	posiciona.janela.tela(splashArvoRe)
+	tkfocus(splashArvoRe)
 	tcl("tkwait","window",splashArvoRe)
   }
 }

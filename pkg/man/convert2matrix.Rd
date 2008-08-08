@@ -109,7 +109,16 @@ function(TheTree) {
 		}
 	}
 	
+	x <- as.matrix(x)
+	y <- as.matrix(y)
+	probMAT <- as.matrix(probMAT)
+	typeMAT <- as.matrix(typeMAT)
+	effectivenessMAT <- as.matrix(effectivenessMAT)
+	utilityMAT <- as.matrix(utilityMAT)
+	destinyMAT <- as.matrix(destinyMAT)
+	
 # ordena as matrizes para nao haver problema com a plot.tree - June 21, 2008 
+if(dim(x)[1] != 1) {
 	for (i in 1:dim(x)[2]) {
 		if ( sum(is.na(x[,i])) == 0 ) { # whatcolorder <- c(whatcolorder, i)
 			y <- y[order(x[,i]),]
@@ -121,6 +130,7 @@ function(TheTree) {
 			x <- x[order(x[,i]),]
 		}
 	}
+  }
 	
 	x <- as.matrix(x)
 	y <- as.matrix(y)
@@ -144,7 +154,6 @@ function(TheTree) {
 	rownames(utilityMAT) <- NULL
 	colnames(destinyMAT) <- NULL
 	rownames(destinyMAT) <- NULL
-	
 	dl <- dim(destinyMAT)[1]
 	destinyarray <- array(0,dl)
 	for (i in 1:dl) {

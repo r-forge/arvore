@@ -103,14 +103,14 @@ function(Alltreatmentstable) {
 		PoinsOriginal <- 10
 		
 		WTPL1Value  <- tkentry(Frame1,width="20",textvariable=WTPL1var)
-		tkgrid(tklabel(Frame1,text="Valor do willingness-to-pay (WTP)"),
+		tkgrid(tklabel(Frame1,text="Valor mínimo do willingness-to-pay (WTP)"),
 				columnspan = 2, sticky = "n")
 		tkgrid(WTPL1Value, columnspan = 2, sticky = "n")
 		tkgrid(tklabel(Frame1,text="                                             "),
 				columnspan = 2, sticky = "n")
 				
 		WTPL2Value  <- tkentry(Frame1,width="20",textvariable=WTPL2var)
-		tkgrid(tklabel(Frame1,text="Valor do willingness-to-pay (WTP)"),
+		tkgrid(tklabel(Frame1,text="Valor máximo do willingness-to-pay (WTP)"),
 				columnspan = 2, sticky = "n")
 		tkgrid(WTPL2Value, columnspan = 2, sticky = "n")
 		tkgrid(tklabel(Frame1,text="                                             "),
@@ -118,7 +118,7 @@ function(Alltreatmentstable) {
 		
 	    ### Numeric format settings ###
 		numericSpinBox <- tkwidget(Frame1, "SpinBox", editable=FALSE, range = c(0,100,1), width = 3)
-		labeldigits <- tklabel(Frame1,text="Número de intervalor:")
+		labeldigits <- tklabel(Frame1,text="Número de intervalos:")
 		tkgrid(labeldigits, numericSpinBox, sticky = "nw", padx = 5, pady = 5)
 		tcl(numericSpinBox, "setvalue", paste("@", PoinsOriginal,sep = ""))
 		
@@ -147,7 +147,7 @@ function(Alltreatmentstable) {
 				Data.standart.CE <- subset(Data.CEA.CE, NT == respostaListbox)
 				
 				ans <- data.frame( Standart = rep(0,length(WTP)))
-				names.ans <- c("Standart")
+				names.ans <- c("Padrão")
 				
 				for (i in 1:dim(Data.alternative.Cost)[1]) {
 					
@@ -156,7 +156,7 @@ function(Alltreatmentstable) {
 					var.inb <- ( 	WTP^2
 								) * Data.alternative.Effectiveness$Variance[i] +
 								Data.alternative.Cost$Variance[i] -
-								2 * WTP * ( 00000 )
+								2 * WTP * ( Data.alternative.Cost$CovDcDe[i] )
 					inb.stat.test <- inb/var.inb^0.5
 					Strategy <- Data.alternative.Cost$Treatment[i]
 					p.val.inb <- pnorm(inb.stat.test)
@@ -172,7 +172,7 @@ function(Alltreatmentstable) {
 				
 				OnAC <- function(WTP, ACProbabilities) {
 					ACGraphWindow <- tktoplevel()
-					title.window <- "ÁrvoRe - MC Simulação - Graphics"
+					title.window <- "ÁrvoRe - MC Simulação - Gráficos"
 					tkwm.title(ACGraphWindow, title.window)
 					
 					frametext <- "Gráfico"
@@ -184,8 +184,8 @@ function(Alltreatmentstable) {
 					tkgrid(frameButton, sticky = "swe")
 					
 					# Image setings.
-					g.imgHeight <- 600/2
-					g.imgWidth <- 800/2
+					g.imgHeight <- 480
+					g.imgWidth <- 640
 					
 					# Canvas window configurations
 					C.Height <- min(c(g.imgHeight, 768))
@@ -244,6 +244,10 @@ function(Alltreatmentstable) {
 										xlab = xlabel, ylab = ylabel, ylim = c(ylim1,ylim2))
 									}
 								}
+								smartlegend( x="right", y= "top", inset=0,
+								             legend = c(treatments.label.plot),
+									     fill=c(treatments.colors.plot),
+									     bg = "gray")
 							dev.off()
 						} else {
 							if (img.type == "jpg") {
@@ -271,7 +275,11 @@ function(Alltreatmentstable) {
 												xlab = xlabel, ylab = ylabel, ylim = c(ylim1,ylim2))
 											}
 										}
-
+										smartlegend( x="right", y= "top", inset=0,
+										             legend = c(treatments.label.plot),
+											     fill=c(treatments.colors.plot),
+											     bg = "gray")
+										
 								dev.off()
 							} else {
 								bmp(filename = .Filename, width = img.width, height = img.height,
@@ -298,7 +306,11 @@ function(Alltreatmentstable) {
 												xlab = xlabel, ylab = ylabel, ylim = c(ylim1,ylim2))
 											}
 										}
-
+										smartlegend( x="right", y= "top", inset=0,
+										             legend = c(treatments.label.plot),
+											     fill=c(treatments.colors.plot),
+											     bg = "gray")
+										
 								dev.off()
 									}
 						}
@@ -446,7 +458,7 @@ function(Alltreatmentstable) {
 						
 						OK.but <-tkbutton(frameLower,text="OK", width=.Width.but, height=.Height.but, command=OnOK)
 						tkbind(exportImgGraphWindow, "<Return>",OnOK)
-						Cancel.but <-tkbutton(frameLower,text="Cancel", width=.Width.but, height=.Height.but, command=OnCancel)
+						Cancel.but <-tkbutton(frameLower,text="Cancelar", width=.Width.but, height=.Height.but, command=OnCancel)
 						tkbind(exportImgGraphWindow, "<Escape>",OnCancel)
 						tkgrid(OK.but, Cancel.but, sticky = "s", padx = 5, pady = 5, columnspan = 2, sticky = "s")
 						
@@ -500,7 +512,7 @@ function(Alltreatmentstable) {
 		tkbind(ACsimtableWindow, "<Return>",OnOK)
 		tkbind(ACsimtableWindow, "<Escape>",OnOK)
 		
-		posiciona.janela.no.mouse(ACsimtableWindow, 250, 310)
+		posiciona.janela.no.mouse(ACsimtableWindow, 310, 310)
 		
 		tkfocus(ACsimtableWindow)
 

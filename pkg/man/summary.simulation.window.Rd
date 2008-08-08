@@ -73,7 +73,8 @@ function(Simlist, tempo1 = Sys.time(), tempo2 = Sys.time(), CicloVal, tipo.nodo 
 	Alltreatmentstable <- data.frame(Treatment = array(,0), Data = array(,0), Mean = array(,0), 
 							Variance = array(,0), Sd = array(,0), Median = array(,0), 
 							Min = array(,0),Max = array(,0), 
-							Quartil1 = array(,0), Quartil2 = array(,0), Time = array(,0))
+							Quartil1 = array(,0), Quartil2 = array(,0), CovDcDe = array(,0),
+							Time = array(,0))
 							
 	for (i in treatments.sim) {
 		
@@ -120,10 +121,14 @@ function(Simlist, tempo1 = Sys.time(), tempo2 = Sys.time(), CicloVal, tipo.nodo 
 		# Remover esta linha se sumarizar saídas de funções de simulação
 		Data <- apply(Data,2,sum, na.rm = TRUE)
 		ntreat <- length(Data)
-		statisticsData <- summary(Data)
+		statisticsData <- summary(Data, na.rm = TRUE)
 		
-		meanData <- mean(Data, na.rm = TRUE)
-		varData <- ( 1 / (ntreat*(ntreat-1)) ) * sum( (Data - meanData)^2)
+		meanData <- mean(Data)
+		if ( tipo.nodo[position] == "M") {
+			varData <- ( 1 / (ntreat*(ntreat-1)) ) * sum( (Data - meanData)^2)
+		} else {
+			varData <- var(	Data, na.rm = TRUE )
+		}
 		sdData <- sqrt(varData)
 		medianData <- statisticsData[3]
 		minData <- statisticsData[1]
@@ -131,15 +136,37 @@ function(Simlist, tempo1 = Sys.time(), tempo2 = Sys.time(), CicloVal, tipo.nodo 
 		quartil1 <- statisticsData[2]
 		quartil3 <- statisticsData[5]
 		
-		EvarData <- varData
+		DataEff <- Data
 				
 		# Guarda as informações importantes
 		line.data.summary <- data.frame(Treatment = pagelabel, Data = "Effectiveness", Mean = meanData, 
 							Variance = varData, Sd = sdData, Median = medianData, 
 							Min = minData, Max = maxData, 
-							Quartil1 = quartil1, Quartil2 = quartil3, Time = tempo)
+							Quartil1 = quartil1, Quartil2 = quartil3, 
+							CovDcDe = 0, Time = tempo)
 		Alltreatmentstable <- abind(Alltreatmentstable, line.data.summary, along=1)
+# 		print(line.data.summary)
+# 		print(Alltreatmentstable)
 		
+	Alltreatmentstable <- as.data.frame(Alltreatmentstable)
+	Alltreatmentstable$Treatment <- as.character(Alltreatmentstable$Treatment)
+	Alltreatmentstable$Data <- as.character(Alltreatmentstable$Data)
+	Alltreatmentstable$Mean <- as.numeric(as.character(Alltreatmentstable$Mean))
+	Alltreatmentstable$Variance <- as.numeric(as.character(Alltreatmentstable$Variance))
+	Alltreatmentstable$Sd <- as.numeric(as.character(Alltreatmentstable$Sd))
+	Alltreatmentstable$Median <- as.numeric(as.character(Alltreatmentstable$Median))
+	Alltreatmentstable$Min <- as.numeric(as.character(Alltreatmentstable$Min))
+	Alltreatmentstable$Max <- as.numeric(as.character(Alltreatmentstable$Max))
+	Alltreatmentstable$Quartil1 <- as.numeric(as.character(Alltreatmentstable$Quartil1))
+	Alltreatmentstable$Quartil2 <- as.numeric(as.character(Alltreatmentstable$Quartil2))
+	Alltreatmentstable$CovDcDe <- as.numeric(as.character(Alltreatmentstable$CovDcDe))
+	Alltreatmentstable$Time <- as.numeric(as.character(Alltreatmentstable$Time))
+		
+		if ( tipo.nodo[position] == "M") {
+			varData <- var(	Data, na.rm = TRUE )
+			sdData <- sqrt(varData)
+		}
+	
 		lableminsize <- tklabel(frameUpperRight,text = paste(rep("_",50),collapse="",sep=""))
 		lableminsize2 <- tklabel(frameUpperRight,text = paste(rep("_",50),collapse="",sep=""))
 # 		label0 <- tklabel(frameUpperRight,text= "Tempo decorrido (segundos)")
@@ -183,30 +210,58 @@ function(Simlist, tempo1 = Sys.time(), tempo2 = Sys.time(), CicloVal, tipo.nodo 
 		tkgrid(lableminsize2, row = 11, column = 0, columnspan = 2)
 		
 		# O Custo -------------------------------------------------
-		Data <- Mktable$Cost
-		# Remover esta linha se sumarizar saídas de funções de simulação
-		Data <- apply(Data,2,sum, na.rm = TRUE)
+		Data <- apply( Mktable$Cost, 2, sum, na.rm = TRUE)
 		ntreat <- length(Data)
-		statisticsData <- summary(Data)
+		statisticsData <- summary(Data, na.rm = TRUE)
 		
-		meanData <- mean(Data, na.rm = TRUE)
-		varData <- ( 1 / (ntreat*(ntreat-1)) ) * sum( (Data - meanData)^2)
+		meanData <- mean(Data)
+		if ( tipo.nodo[position] == "M") {
+			varData <- ( 1 / (ntreat*(ntreat-1)) ) * sum( (Data - meanData)^2)
+		} else {
+			varData <- var(	Data, na.rm = TRUE )
+		}
 		sdData <- sqrt(varData)
 		medianData <- statisticsData[3]
 		minData <- statisticsData[1]
 		maxData <- statisticsData[6]
 		quartil1 <- statisticsData[2]
-		quartil3 <- statisticsData[5]
+		quartil3 <- statisticsData[5] 
 		
-		CvarData <- varData
+		CovCE <- sum( (DataEff - mean(DataEff) * (Data - meanData)) / ( ntreat * (ntreat - 1) ) , na.rm = TRUE)
+# 		print(CovCE)
+		nlAllt <- dim(Alltreatmentstable)[1]
+		Alltreatmentstable$CovDcDe[ nlAllt ] <- CovCE
 		
 		# Guarda as informações importantes
 		line.data.summary <- data.frame(Treatment = pagelabel, Data = "Cost", Mean = meanData, 
 							Variance = varData, Sd = sdData, Median = medianData, 
 							Min = minData, Max = maxData, 
-							Quartil1 = quartil1, Quartil2 = quartil3, Time = tempo)
-		Alltreatmentstable <- abind(Alltreatmentstable, line.data.summary, along=1)
+							Quartil1 = quartil1, Quartil2 = quartil3,
+							CovDcDe = CovCE, Time = tempo)
 		
+		Alltreatmentstable <- abind(Alltreatmentstable, line.data.summary, along=1)
+# 		print(line.data.summary)
+# 		print(Alltreatmentstable)
+		
+	Alltreatmentstable <- as.data.frame(Alltreatmentstable)
+	Alltreatmentstable$Treatment <- as.character(Alltreatmentstable$Treatment)
+	Alltreatmentstable$Data <- as.character(Alltreatmentstable$Data)
+	Alltreatmentstable$Mean <- as.numeric(as.character(Alltreatmentstable$Mean))
+	Alltreatmentstable$Variance <- as.numeric(as.character(Alltreatmentstable$Variance))
+	Alltreatmentstable$Sd <- as.numeric(as.character(Alltreatmentstable$Sd))
+	Alltreatmentstable$Median <- as.numeric(as.character(Alltreatmentstable$Median))
+	Alltreatmentstable$Min <- as.numeric(as.character(Alltreatmentstable$Min))
+	Alltreatmentstable$Max <- as.numeric(as.character(Alltreatmentstable$Max))
+	Alltreatmentstable$Quartil1 <- as.numeric(as.character(Alltreatmentstable$Quartil1))
+	Alltreatmentstable$Quartil2 <- as.numeric(as.character(Alltreatmentstable$Quartil2))
+	Alltreatmentstable$CovDcDe <- as.numeric(as.character(Alltreatmentstable$CovDcDe))
+	Alltreatmentstable$Time <- as.numeric(as.character(Alltreatmentstable$Time))
+		
+		if ( tipo.nodo[position] == "M") {
+			varData <- var(	Data, na.rm = TRUE )
+			sdData <- sqrt(varData)
+		}
+	
 		lableminsize <- tklabel(frameUpperLeft,text = paste(rep("_",50),collapse="",sep=""))
 		lableminsize2 <- tklabel(frameUpperLeft,text = paste(rep("_",50),collapse="",sep=""))
 # 		label0 <- tklabel(frameUpperLeft,text= "Tempo decorrido (segundos)")
@@ -249,9 +304,6 @@ function(Simlist, tempo1 = Sys.time(), tempo2 = Sys.time(), CicloVal, tipo.nodo 
 		tkgrid(label17, row = 10, column = 1,sticky="e")
 		tkgrid(lableminsize2, row = 11, column = 0, columnspan = 2)
 		
-# 		eval( parse(text = markov.termination) )
-# 		eval( parse(text = markov.termination) )
-
 		tkgrid(frameUpperLeft, frameUpperRight, sticky="ns")
 		tkgrid(frameUpper,sticky="ns")
 		tkgrid(frameLower,sticky="ns")
@@ -261,12 +313,13 @@ function(Simlist, tempo1 = Sys.time(), tempo2 = Sys.time(), CicloVal, tipo.nodo 
 		
 		# The CE -----------------------------------------------------------------------
 		# Remover esta linha se sumarizar saídas de funções de simulação
-		Data <- apply(Mktable$Cost,2,sum) / apply(Mktable$Effectiveness,2,sum, na.rm = TRUE)
+		Data <- apply(Mktable$Cost,2,sum, na.rm = TRUE) / apply(Mktable$Effectiveness, 2, sum, na.rm = TRUE)
+		Data <- replace( Data, Data == Inf, NA)
 		
-		statisticsData <- summary(Data)
+		statisticsData <- summary(Data, na.rm = TRUE)
 		
 		meanData <- statisticsData[4]
-		varData <- var(Data, na.rm = TRUE, use = "complete.obs")
+		varData <- var(Data, na.rm = TRUE)
 		sdData <- sqrt(varData)
 		medianData <- statisticsData[3]
 		minData <- statisticsData[1]
@@ -278,13 +331,14 @@ function(Simlist, tempo1 = Sys.time(), tempo2 = Sys.time(), CicloVal, tipo.nodo 
 		line.data.summary <- data.frame(Treatment = pagelabel, Data = "C/E", Mean = meanData, 
 							Variance = varData, Sd = sdData, Median = medianData, 
 							Min = minData, Max = maxData, 
-							Quartil1 = quartil1, Quartil2 = quartil3, Time = tempo)
-		Alltreatmentstable <- abind(Alltreatmentstable, line.data.summary, along=1)
-		
-		
+							Quartil1 = quartil1, Quartil2 = quartil3, 
+							CovDcDe = NA, Time = tempo)
+		Alltreatmentstable <- abind(Alltreatmentstable, line.data.summary, along=1)		
 	}
 	
-	rm(Data, statisticsData, Mktable)
+	# Uma limpeza na memória...
+	rm(Data, statisticsData, Mktable, CovCE, nlAllt, meanData, varData, sdData, medianData, minData, maxData,
+		quartil1, quartil3)
 	
 	# Ajusta o Alltreatmentstable
 	rownames(Alltreatmentstable) <- NULL
@@ -299,6 +353,7 @@ function(Simlist, tempo1 = Sys.time(), tempo2 = Sys.time(), CicloVal, tipo.nodo 
 	Alltreatmentstable$Max <- as.numeric(as.character(Alltreatmentstable$Max))
 	Alltreatmentstable$Quartil1 <- as.numeric(as.character(Alltreatmentstable$Quartil1))
 	Alltreatmentstable$Quartil2 <- as.numeric(as.character(Alltreatmentstable$Quartil2))
+	Alltreatmentstable$CovDcDe <- as.numeric(as.character(Alltreatmentstable$CovDcDe))
 	Alltreatmentstable$Time <- as.numeric(as.character(Alltreatmentstable$Time))
 	Alltreatmentstable <- Alltreatmentstable[ order(Alltreatmentstable$Data),]
 # 	print(Alltreatmentstable)
@@ -329,785 +384,14 @@ function(Simlist, tempo1 = Sys.time(), tempo2 = Sys.time(), CicloVal, tipo.nodo 
 		tkfocus(tt)
 	}
 	
-	OnGraph <- function() {
+	OnGraph <- function(Mktable, Alltreatmentstable) {
+		
 		selectedpage.number <- tclvalue(tcl(pBar,"raise"))	# Retorna a página selecionada
 		selectedpage.number <- as.numeric(substr(selectedpage.number,5,nchar(selectedpage.number)))
 		selected.treatment <- treatments.sim[selectedpage.number]
 		Mktable <- Simlist[[selected.treatment]]
 		
-		Cost <- apply(Mktable$Cost,2,sum)
-		Effectiveness <- apply(Mktable$Effectiveness,2,sum)
-	
-# OnGraph ----------------------------------------------------------------------------------------------------------------		tkfocus(summarysimulationWindow)
-		graphsimulationWindow <- tktoplevel()
-		title.window <- "ÁrvoRe - MC Simulação - Gráficos"
-		tkwm.title(graphsimulationWindow, title.window)
-		
-		frameOverall <- tkwidget(graphsimulationWindow, "labelframe", borderwidth = 0, relief = "groove")
-		frameResume <- tkwidget(frameOverall, "labelframe", borderwidth = 2, relief = "groove", text = "Tipos de Gráficos")
-		frameDistribution <- tkwidget(frameOverall, "labelframe", borderwidth = 2, relief = "groove", 
-										text = "Distribuição")
-		frameOtherGraphs <- tkwidget(frameOverall, "labelframe", borderwidth = 2, relief = "groove", 
-										text = "Custo-Efetividade")
-		frameLower <- tkframe(frameOverall, relief="groove", borderwidth = 0)
-			
-		OnShowIt <- function(type = "Other", SurvivalData = Mktable$Survival,...) {
-			
-			aGraphWindow <- tktoplevel()
-			title.window <- "ÁrvoRe - MC Simulação - Graphics"
-			tkwm.title(aGraphWindow, title.window)
-			
-			frametext <- "Gráfico"
-			frameOverall <- tkwidget(aGraphWindow, "labelframe", borderwidth = 2, relief = "groove", 
-									labelanchor = "n", text = frametext)
-			frameButton <- tkwidget(aGraphWindow, "labelframe", borderwidth = 0, relief = "groove")
-			
-			tkgrid(frameOverall, sticky = "nwe")
-			tkgrid(frameButton, sticky = "swe")
-			
-			# Image setings.
-			g.imgHeight <- 600/2
-			g.imgWidth <- 800/2
-			
-			# Canvas window configurations
-			C.Height <- min(c(g.imgHeight, 768))
-			C.Width <- min(c(g.imgWidth, 1024))
-			Borderwidth <- 2
-			
-			# scrollbar objects
-			fHscroll <- tkscrollbar(frameOverall, orient="horiz", command = function(...)tkxview(fCanvas,...) )
-			fVscroll <- tkscrollbar(frameOverall, command = function(...)tkyview(fCanvas,...) )
-			fCanvas <- tkcanvas(frameOverall, relief = "sunken", borderwidth = Borderwidth, 
-								width = C.Width, height = C.Height,
-								xscrollcommand = function(...)tkset(fHscroll,...), 
-								yscrollcommand = function(...)tkset(fVscroll,...)
-								)
-								
-			# Pack the scroll bars.
-			tkpack(fHscroll, side = "bottom", fill = "x")
-			tkpack(fVscroll, side = "right", fill = "y")
-			# Pack the canvas
-			tkpack(fCanvas, anchor = "center", side = "right", fill = "both", expand = 1)
-					
-			# Image file name setings.
-			.Filename <- paste(tempdir(),"\\", "grafico.arvore.png", sep="")
-			
-			# What plot?
-			plot.it.to.image <- function(.Filename, img.type = "png", img.quality = 90,
-											img.width = 600, img.height = 600, SurvivalData = Mktable$Survival, 
-											...) {
-# 				print(.Filename)
-# 				print(type)
-# 				print(img.type)
-				
-				if( type == "Distrib.cost") {
-					if (img.type == "png") {
-						png(file=.Filename, width = img.width, height = img.height, bg = "white", restoreConsole = FALSE)
-							Graphtitle <- paste("Histograma de ", selected.treatment, sep = "")
-							xlabel <- "Cost"
-							hist(Cost, main = Graphtitle, xlab = xlabel)
-						dev.off()
-					} else {
-						if (img.type == "jpg") {
-							jpeg(filename = .Filename, width = img.width, height = img.height,
-							     units = "px", pointsize = 12, quality = img.quality, bg = "white",
-							     res = NA, restoreConsole = FALSE)								
-					     		Graphtitle <- paste("Histograma de ", selected.treatment, sep = "")
-								xlabel <- "Cost"
-								hist(Cost, main = Graphtitle, xlab = xlabel)
-							dev.off()
-						} else {
-							bmp(filename = .Filename, width = img.width, height = img.height,
-						    	units = "px", pointsize = 12, bg = "white", res = NA,
-						    	restoreConsole = FALSE)
-					     		Graphtitle <- paste("Histograma de ", selected.treatment, sep = "")
-								xlabel <- "Cost"
-								hist(Cost, main = Graphtitle, xlab = xlabel)
-							dev.off()
-						}
-					}
-				}
-				
-				if( type == "Distrib.effectiveness") {
-					if (img.type == "png") {
-						png(file=.Filename, width = img.width, height = img.height, bg = "white", restoreConsole = FALSE)
-						Graphtitle <- paste("Histograma de ", selected.treatment, sep = "")
-						xlabel <- "Efetividade"
-						hist(Effectiveness, main = Graphtitle, xlab = xlabel)
-						dev.off()
-					} else {
-						if (img.type == "jpg") {
-							jpeg(filename = .Filename, width = img.width, height = img.height,
-							     units = "px", pointsize = 12, quality = img.quality, bg = "white",
-							     res = NA, restoreConsole = FALSE)								
-								Graphtitle <- paste("Histograma de ", selected.treatment, sep = "")
-								xlabel <- "Efetividade"
-								hist(Effectiveness, main = Graphtitle, xlab = xlabel)
-							dev.off()
-						} else {
-							bmp(filename = .Filename, width = img.width, height = img.height,
-						    	units = "px", pointsize = 12, bg = "white", res = NA,
-						    	restoreConsole = FALSE)
-								Graphtitle <- paste("Histograma de ", selected.treatment, sep = "")
-								xlabel <- "Efetividade"
-								hist(Effectiveness, main = Graphtitle, xlab = xlabel)
-							dev.off()
-						}
-					}
-				}
-				
-				if( type == "CE.scatterplot") {
-					if (img.type == "png") {
-						png(file=.Filename, width = img.width, height = img.height, bg = "white", restoreConsole = FALSE)
-							Graphtitle <- "CE Scatterplot"
-							xlabel <- "Efetividade"
-							ylabel <- "Custo"
-							plot(Effectiveness,Cost, col = "red", pch = "*", main = Graphtitle,
-									xlab = xlabel, ylab = ylabel)
-						dev.off()
-					} else {
-						if (img.type == "jpg") {
-							jpeg(filename = .Filename, width = img.width, height = img.height,
-							     units = "px", pointsize = 12, quality = img.quality, bg = "white",
-							     res = NA, restoreConsole = FALSE)								
-								Graphtitle <- "CE Scatterplot"
-								xlabel <- "Efetividade"
-								ylabel <- "Custo"
-								plot(Effectiveness,Cost, col = "red", pch = "*", main = Graphtitle,
-										xlab = xlabel, ylab = ylabel)
-							dev.off()
-						} else {
-							bmp(filename = .Filename, width = img.width, height = img.height,
-						    	units = "px", pointsize = 12, bg = "white", res = NA,
-						    	restoreConsole = FALSE)
-								Graphtitle <- "CE Scatterplot"
-								xlabel <- "Efetividade"
-								ylabel <- "Custo"
-								plot(Effectiveness,Cost, col = "red", pch = "*", main = Graphtitle,
-										xlab = xlabel, ylab = ylabel)
-							dev.off()
-						}
-					}
-				}
-				
-				if( type == "Distrib.CER") {
-					if (img.type == "png") {
-						png(file=.Filename, width = img.width, height = img.height, bg = "white", restoreConsole = FALSE)
-							Graphtitle <- paste("Histograma de ", selected.treatment, sep = "")
-							xlabel <- "Razão Custo-Efetividade ($)"
-							hist(Cost/Effectiveness, main = Graphtitle, xlab = xlabel)
-						dev.off()
-					} else {
-						if (img.type == "jpg") {
-							jpeg(filename = .Filename, width = img.width, height = img.height,
-							     units = "px", pointsize = 12, quality = img.quality, bg = "white",
-							     res = NA, restoreConsole = FALSE)								
-								Graphtitle <- paste("Histograma de ", selected.treatment, sep = "")
-								xlabel <- "Razão Custo-Efetividade ($)"
-								hist(Cost/Effectiveness, main = Graphtitle, xlab = xlabel)
-							dev.off()
-						} else {
-							bmp(filename = .Filename, width = img.width, height = img.height,
-						    	units = "px", pointsize = 12, bg = "white", res = NA,
-						    	restoreConsole = FALSE)
-								Graphtitle <- paste("Histograma de ", selected.treatment, sep = "")
-								xlabel <- "Razão Custo-Efetividade ($)"
-								hist(Cost/Effectiveness, main = Graphtitle, xlab = xlabel)
-							dev.off()
-						}
-					}
-				}
-				
-				if( type == "Survival.Curve") {
-					if (img.type == "png") {
-						png(file=.Filename, width = img.width, height = img.height, bg = "white", restoreConsole = FALSE)
-							Graphtitle <- paste("Número de Sobreviventes \n", selected.treatment, sep = "")
-							xlabel <- "Ciclos"
-# 							hist(SurvivalData, main = Graphtitle, xlab = xlabel)
-							barplot(SurvivalData, main = Graphtitle, col = "red", space = c(0,0),
-									xlab = xlabel)
-						dev.off()
-# 						print(SurvivalData)
-					} else {
-						if (img.type == "jpg") {
-							jpeg(filename = .Filename, width = img.width, height = img.height,
-							     units = "px", pointsize = 12, quality = img.quality, bg = "white",
-							     res = NA, restoreConsole = FALSE)								
-								Graphtitle <- paste("Número de Sobreviventes \n", selected.treatment, sep = "")
-								xlabel <- "Ciclos"
-	# 							hist(Cost/Effectiveness, main = Graphtitle, xlab = xlabel)
-								barplot(SurvivalData, main = Graphtitle, col = "red", space = c(0,0),
-										xlab = xlabel)
-							dev.off()
-						} else {
-							bmp(filename = .Filename, width = img.width, height = img.height,
-						    	units = "px", pointsize = 12, bg = "white", res = NA,
-						    	restoreConsole = FALSE)
-								Graphtitle <- paste("Número de Sobreviventes \n", selected.treatment, sep = "")
-								xlabel <- "Ciclos"
-	# 							hist(Cost/Effectiveness, main = Graphtitle, xlab = xlabel)
-								barplot(SurvivalData, main = Graphtitle, col = "red", space = c(0,0),
-										xlab = xlabel)
-							dev.off()
-						}
-					}
-				}
-				
-			
-			
-				
-			}
-			
-			# Default img type
-			img.type <- "png"
-			plot.it.to.image(.Filename = .Filename, type = type, img.type = img.type,
-								img.width = g.imgWidth, img.height = g.imgHeight)
-			
-			image1 <- tclVar()
-			tcl("image","create","photo",image1,file=.Filename)
-			tkcreate(fCanvas, "image", g.imgWidth/2, g.imgHeight/2, image = image1, anchor = "center")
-			tkconfigure(fCanvas, scrollregion = c(0,0,g.imgWidth,g.imgHeight))
-			
-			
-			OnOK <- function() {
-				file.remove(.Filename)
-				tkdestroy(aGraphWindow)
-				tkwm.deiconify(graphsimulationWindow)
-				tkfocus(graphsimulationWindow)
-			}
-			
-			OnExportGraphic <- function(...) {
-				exportImgGraphWindow <- tktoplevel()
-				title <- "ÁrvoRe - Exportar Imagem"
-				tkwm.title(exportImgGraphWindow,title)
-				
-				frameOverall <- tkframe(exportImgGraphWindow)
-				frameUpper <- tkframe(frameOverall, relief="groove", borderwidth=0)
-				frameUpperLeft <- tkframe(frameUpper, relief="groove", borderwidth=2)
-				frameUpperRigth <- tkframe(frameUpper, relief="groove", borderwidth=2)
-				frameLower <- tkframe(frameOverall, relief="groove", borderwidth=0)
-				
-				tkgrid( tklabel(frameUpper,text="Formato de imagem"),sticky="n", columnspan = 2)
-				
-				rbValue <- tclVar("jpg")
-				QualityValue <- tclVar("90")
-				
-				rb1 <- tkradiobutton(frameUpper)
-				tkconfigure(rb1,variable=rbValue,value="bmp")
-				tkgrid(	tklabel(frameUpperLeft,text="Bitmap .bmp "),rb1, sticky = "ne")
-				
-				rb2 <- tkradiobutton(frameUpper)
-				tkconfigure(rb2,variable=rbValue,value="jpg")
-				tkgrid(	tklabel(frameUpperLeft,text="Jpeg .jpg "),rb2, sticky = "ne")
-				
-				rb3 <- tkradiobutton(frameUpper)
-				tkconfigure(rb3,variable=rbValue,value="png")
-				tkgrid(	tklabel(frameUpperLeft,text="Portable network graphics .png "),rb3, sticky = "ne")
-				
-				SliderValueLabel <- tklabel(frameUpperRigth, text = as.character(tclvalue(QualityValue)) )
-				sliderlabel <- tklabel(frameUpperRigth, text = "Valor da qualidade de imagem : ")
-				sliderlabel2 <- tklabel(frameUpperRigth,text = "\%")
-				tkgrid(sliderlabel, SliderValueLabel, sliderlabel2)
-				tkconfigure(SliderValueLabel, textvariable = QualityValue)
-				sliderImg <- tkscale(frameUpperRigth, from = 100, to = 1,
-				                   showvalue = F, variable = QualityValue,
-				                   resolution = 1, orient = "horizontal")
-				tkgrid(sliderImg,sticky="ew")
-			
-				tkgrid(frameUpperLeft, frameUpperRigth,sticky="ns")
-				tkgrid(frameUpper,sticky="ns")
-				tkgrid(frameLower,sticky="ns")
-				
-				Onformat <- function() {
-					ansVar <- as.character(tclvalue(rbValue))
-					if (ansVar != "jpg") {
-						tkconfigure(SliderValueLabel, state = "disabled")
-						tkconfigure(sliderlabel, state = "disabled")
-						tkconfigure(sliderlabel2, state = "disabled")
-						tkconfigure(SliderValueLabel, state = "disabled")
-						tkconfigure(sliderImg, state = "disabled")
-					} else {
-						tkconfigure(SliderValueLabel, state = "normal")
-						tkconfigure(sliderlabel, state = "normal")
-						tkconfigure(sliderlabel2, state = "normal")
-						tkconfigure(SliderValueLabel, state = "normal")
-						tkconfigure(sliderImg, state = "normal")
-					}
-				}
-				
-				OnOK <- function(...)
-				{
-					ImgFormatselected <- as.character(tclvalue(rbValue))
-					ImgQualityselected <- as.numeric(as.character(tclvalue(QualityValue)))
-					if (ImgFormatselected == "png") {
-						.Filename <- tclvalue(tkgetSaveFile(filetypes="{{Portable network graphics Image Files} {.png}} {{All files} *}"))
-						if (!nchar(.Filename))
-							tkfocus(aGraphWindow)
-						else {
-							ans <- substr(.Filename,nchar(.Filename)-3,nchar(.Filename))
-							if ( ans != ".png" ) .Filename <- paste(.Filename, ".png", sep="")
-									
-							if (!file.exists(.Filename)) file.remove(.Filename)
-							
-							plot.it.to.image(.Filename = .Filename, type = type, img.type = ImgFormatselected, img.width = 600, img.height = 600)
-						}
-					} else {
-						if (ImgFormatselected == "jpg") {
-							.Filename <- tclvalue(tkgetSaveFile(filetypes="{{Jpeg Image Files} {.jpg}} {{All files} *}"))
-							if (!nchar(.Filename))
-								tkfocus(aGraphWindow)
-							else {
-								ans <- substr(.Filename,nchar(.Filename)-3,nchar(.Filename))
-								if ( ans != ".jpg" ) .Filename <- paste(.Filename, ".jpg", sep="")
-										
-								if (!file.exists(.Filename)) file.remove(.Filename)
-								
-								plot.it.to.image(.Filename = .Filename, type = type, img.type = ImgFormatselected, img.width = 600, img.height = 600,
-													img.quality = ImgQualityselected)
-							}
-						} else {
-							.Filename <- tclvalue(tkgetSaveFile(filetypes="{{Bitmap Image Files} {.bmp}} {{All files} *}"))
-							if (!nchar(.Filename))
-								tkfocus(aGraphWindow)
-							else {
-								ans <- substr(.Filename,nchar(.Filename)-3,nchar(.Filename))
-								if ( ans != ".bmp" ) .Filename <- paste(.Filename, ".bmp", sep="")
-										
-								if (!file.exists(.Filename)) file.remove(.Filename)
-								
-								plot.it.to.image(.Filename = .Filename, type = type, img.type = ImgFormatselected, img.width = 600, img.height = 600)
-							}
-						}
-					}
-					tkdestroy(exportImgGraphWindow)
-					tkwm.deiconify(aGraphWindow)
-					tkfocus(aGraphWindow)
-				}
-				
-				OnCancel <- function()
-				{
-					tkdestroy(exportImgGraphWindow)
-					tkwm.deiconify(aGraphWindow)
-					tkfocus(aGraphWindow)
-				}
-				
-				.Width.but <- 10
-				.Height.but <- 1
-				
-				OK.but <-tkbutton(frameLower,text="OK", width=.Width.but, height=.Height.but, command=OnOK)
-				tkbind(exportImgGraphWindow, "<Return>",OnOK)
-				Cancel.but <-tkbutton(frameLower,text="Cancel", width=.Width.but, height=.Height.but, command=OnCancel)
-				tkbind(exportImgGraphWindow, "<Escape>",OnCancel)
-				tkgrid(OK.but, Cancel.but, sticky = "s", padx = 5, pady = 5, columnspan = 2, sticky = "s")
-				
-				tkbind(rb1, "<Enter>",Onformat)
-				tkbind(rb2, "<Enter>",Onformat)
-				tkbind(rb3, "<Enter>",Onformat)
-				tkbind(rb1, "<Leave>",Onformat)
-				tkbind(rb2, "<Leave>",Onformat)
-				tkbind(rb3, "<Leave>",Onformat)
-				
-				tkgrid(frameOverall)
-				tkfocus(exportImgGraphWindow)
-# 				posiciona.janela.no.mouse(exportImgGraphWindow)
-			}
-			
-		    .Width.but <- 10
-			.Height.but <- 1
-			
-			OK.but <- tkbutton(frameButton,text="OK", width=.Width.but, height=.Height.but, command=OnOK)
-			Export.but <- tkbutton(frameButton,text="Exportar...", width=.Width.but, height=.Height.but, command=OnExportGraphic)
-	
-			tkgrid(OK.but, Export.but, sticky = "s", padx = 5, pady = 5)
-# 			tkconfigure(Export.but, state = "disabled")
-	
-			tkbind(aGraphWindow, "<Return>", OnOK)
-			tkbind(aGraphWindow, "<Escape>", OnCancel)
-	
-			tkwm.deiconify(aGraphWindow)
-			tkfocus(aGraphWindow)
-			
-		}
-		
-		OnOK <- function() {
-			tkdestroy(graphsimulationWindow)
-			tkfocus(summarysimulationWindow)
-		}
-		
-		OnCancel <- function() {
-			tkdestroy(graphsimulationWindow)
-			tkfocus(summarysimulationWindow)
-		}
-		
-		OnDistrib.cost <- function() {
-			OnShowIt(type = "Distrib.cost")		
-		}
-		
-		OnDistrib.effectiveness <- function() {
-			OnShowIt(type = "Distrib.effectiveness")
-		}
-		
-		OnDistrib.CER <- function() {
-			OnShowIt(type = "Distrib.CER")
-		}
-	
-		OnDistrib.incrementals <- function() {
-			OnShowIt(type = "Distrib.incrementals")
-		}
-		
-		OnCE <- function() {
-			CEGraphWindow <- tktoplevel()
-			title.window <- "ÁrvoRe - MC Simulação - Graphics"
-			tkwm.title(CEGraphWindow, title.window)
-			
-			frametext <- "Gráfico"
-			frameOverall <- tkwidget(CEGraphWindow, "labelframe", borderwidth = 2, relief = "groove", 
-									labelanchor = "n", text = frametext)
-			frameButton <- tkwidget(CEGraphWindow, "labelframe", borderwidth = 0, relief = "groove")
-			
-			tkgrid(frameOverall, sticky = "nwe")
-			tkgrid(frameButton, sticky = "swe")
-			
-			# Image setings.
-			g.imgHeight <- 600/2
-			g.imgWidth <- 800/2
-			
-			# Canvas window configurations
-			C.Height <- min(c(g.imgHeight, 768))
-			C.Width <- min(c(g.imgWidth, 1024))
-			Borderwidth <- 2
-			
-			# scrollbar objects
-			fHscroll <- tkscrollbar(frameOverall, orient="horiz", command = function(...)tkxview(fCanvas,...) )
-			fVscroll <- tkscrollbar(frameOverall, command = function(...)tkyview(fCanvas,...) )
-			fCanvas <- tkcanvas(frameOverall, relief = "sunken", borderwidth = Borderwidth, 
-								width = C.Width, height = C.Height,
-								xscrollcommand = function(...)tkset(fHscroll,...), 
-								yscrollcommand = function(...)tkset(fVscroll,...)
-								)
-								
-			# Pack the scroll bars.
-			tkpack(fHscroll, side = "bottom", fill = "x")
-			tkpack(fVscroll, side = "right", fill = "y")
-			# Pack the canvas
-			tkpack(fCanvas, anchor = "center", side = "right", fill = "both", expand = 1)
-					
-			# Image file name setings.
-			.Filename <- paste(tempdir(),"\\", "grafico.arvore.png", sep="")
-			
-			# The data to plot			
-			AllTreatCost <- Alltreatmentstable[Alltreatmentstable$Data == "Cost",]
-			AllTreatEffectiveness <- Alltreatmentstable[Alltreatmentstable$Data == "Effectiveness",]
-			# Initial colors to treatments points
-			treatments.colors.plot <- 1:length(AllTreatCost$Treatment)
-			# The treatments names
-			treatments.label.plot <- AllTreatCost$Treatment
-			
-			# What plot?
-			plot.it.to.image <- function(AllTreatEffectiveness, AllTreatCost, treatments.colors.plot,
-											treatments.label.plot,
-											.Filename, img.type = "png", img.quality = 90, 
-											img.width = 600, img.height = 600, ...) {
-				
-				if (img.type == "png") {
-					png(file=.Filename, width = img.width, height = img.height, bg = "white", restoreConsole = FALSE)
-						Graphtitle <- "Plano Custo-Efetividade"
-						xlabel <- "Efetividade"
-						ylabel <- "Custo"
-						plot(AllTreatEffectiveness$Mean, AllTreatCost$Mean, 
-								col = treatments.colors.plot, pch = "*", main = Graphtitle,
-								xlab = xlabel, ylab = ylabel)
-						smartlegend( x="left", y= "top", inset=0,                             #smartlegend parameters
-						             legend = c(treatments.label.plot), #legend parameters
-							     fill=c(treatments.colors.plot),                        #legend parameters
-							     bg = "gray")								
-					dev.off()
-				} else {
-					if (img.type == "jpg") {
-						jpeg(filename = .Filename, width = img.width, height = img.height,
-						     units = "px", pointsize = 12, quality = img.quality, bg = "white",
-						     res = NA, restoreConsole = FALSE)								
-							Graphtitle <- "Plano Custo-Efetividade"
-							xlabel <- "Efetividade"
-							ylabel <- "Custo"
-							plot(AllTreatEffectiveness$Mean, AllTreatCost$Mean, 
-									col = treatments.colors.plot, pch = "*", main = Graphtitle,
-									xlab = xlabel, ylab = ylabel)
-									
-							smartlegend( x="left", y= "top", inset=0,                             #smartlegend parameters
-							             legend = c(treatments.label.plot), #legend parameters
-								     fill=c(treatments.colors.plot),                        #legend parameters
-								     bg = "gray")								
-									
-						dev.off()
-					} else {
-						bmp(filename = .Filename, width = img.width, height = img.height,
-					    	units = "px", pointsize = 12, bg = "white", res = NA,
-					    	restoreConsole = FALSE)
-							Graphtitle <- "Plano Custo-Efetividade"
-							xlabel <- "Efetividade"
-							ylabel <- "Custo"
-							plot(AllTreatEffectiveness$Mean, AllTreatCost$Mean, 
-									col = treatments.colors.plot, pch = "*", main = Graphtitle,
-									xlab = xlabel, ylab = ylabel)
-									
-							smartlegend( x="left", y= "top", inset=0,                             #smartlegend parameters
-							             legend = c(treatments.label.plot), #legend parameters
-								     fill=c(treatments.colors.plot),                        #legend parameters
-								     bg = "gray")								
-									
-						dev.off()
-							}
-				}
-			}
-			
-			# Default img type
-			img.type <- "png"
-			plot.it.to.image(AllTreatEffectiveness, AllTreatCost, treatments.colors.plot, treatments.label.plot, 
-								.Filename = .Filename, type = type, img.type = img.type,
-								img.width = g.imgWidth, img.height = g.imgHeight)
-			
-			image1 <- tclVar()
-			tcl("image","create","photo",image1,file=.Filename)
-			tkcreate(fCanvas, "image", g.imgWidth/2, g.imgHeight/2, image = image1, anchor = "center")
-			tkconfigure(fCanvas, scrollregion = c(0,0,g.imgWidth,g.imgHeight))
-			
-			
-			OnOK <- function() {
-				file.remove(.Filename)
-				tkdestroy(CEGraphWindow)
-				tkwm.deiconify(graphsimulationWindow)
-				tkfocus(graphsimulationWindow)
-			}
-			
-			OnExportGraphic <- function(...) {
-				exportImgGraphWindow <- tktoplevel()
-				title <- "ÁrvoRe - Exportar Imagem"
-				tkwm.title(exportImgGraphWindow,title)
-				
-				frameOverall <- tkframe(exportImgGraphWindow)
-				frameUpper <- tkframe(frameOverall, relief="groove", borderwidth=0)
-				frameUpperLeft <- tkframe(frameUpper, relief="groove", borderwidth=2)
-				frameUpperRigth <- tkframe(frameUpper, relief="groove", borderwidth=2)
-				frameLower <- tkframe(frameOverall, relief="groove", borderwidth=0)
-				
-				tkgrid( tklabel(frameUpper,text="Formato de imagem"),sticky="n", columnspan = 2)
-				
-				rbValue <- tclVar("jpg")
-				QualityValue <- tclVar("90")
-				
-				rb1 <- tkradiobutton(frameUpper)
-				tkconfigure(rb1,variable=rbValue,value="bmp")
-				tkgrid(	tklabel(frameUpperLeft,text="Bitmap .bmp "),rb1, sticky = "ne")
-				
-				rb2 <- tkradiobutton(frameUpper)
-				tkconfigure(rb2,variable=rbValue,value="jpg")
-				tkgrid(	tklabel(frameUpperLeft,text="Jpeg .jpg "),rb2, sticky = "ne")
-				
-				rb3 <- tkradiobutton(frameUpper)
-				tkconfigure(rb3,variable=rbValue,value="png")
-				tkgrid(	tklabel(frameUpperLeft,text="Portable network graphics .png "),rb3, sticky = "ne")
-				
-				SliderValueLabel <- tklabel(frameUpperRigth, text = as.character(tclvalue(QualityValue)) )
-				sliderlabel <- tklabel(frameUpperRigth, text = "Valor da qualidade de imagem : ")
-				sliderlabel2 <- tklabel(frameUpperRigth,text = "\%")
-				tkgrid(sliderlabel, SliderValueLabel, sliderlabel2)
-				tkconfigure(SliderValueLabel, textvariable = QualityValue)
-				sliderImg <- tkscale(frameUpperRigth, from = 100, to = 1,
-				                   showvalue = F, variable = QualityValue,
-				                   resolution = 1, orient = "horizontal")
-				tkgrid(sliderImg,sticky="ew")
-			
-				tkgrid(frameUpperLeft, frameUpperRigth,sticky="ns")
-				tkgrid(frameUpper,sticky="ns")
-				tkgrid(frameLower,sticky="ns")
-				
-				Onformat <- function() {
-					ansVar <- as.character(tclvalue(rbValue))
-					if (ansVar != "jpg") {
-						tkconfigure(SliderValueLabel, state = "disabled")
-						tkconfigure(sliderlabel, state = "disabled")
-						tkconfigure(sliderlabel2, state = "disabled")
-						tkconfigure(SliderValueLabel, state = "disabled")
-						tkconfigure(sliderImg, state = "disabled")
-					} else {
-						tkconfigure(SliderValueLabel, state = "normal")
-						tkconfigure(sliderlabel, state = "normal")
-						tkconfigure(sliderlabel2, state = "normal")
-						tkconfigure(SliderValueLabel, state = "normal")
-						tkconfigure(sliderImg, state = "normal")
-					}
-				}
-				
-				OnOK <- function(...)
-				{
-					ImgFormatselected <- as.character(tclvalue(rbValue))
-					ImgQualityselected <- as.numeric(as.character(tclvalue(QualityValue)))
-					if (ImgFormatselected == "png") {
-						.Filename <- tclvalue(tkgetSaveFile(filetypes="{{Portable network graphics Image Files} {.png}} {{All files} *}"))
-						if (!nchar(.Filename))
-							tkfocus(CEGraphWindow)
-						else {
-							ans <- substr(.Filename,nchar(.Filename)-3,nchar(.Filename))
-							if ( ans != ".png" ) .Filename <- paste(.Filename, ".png", sep="")
-									
-							if (!file.exists(.Filename)) file.remove(.Filename)
-							
-							plot.it.to.image(AllTreatEffectiveness, AllTreatCost, treatments.colors.plot, treatments.label.plot,
-												.Filename = .Filename, type = type, img.type = ImgFormatselected)
-						}
-					} else {
-						if (ImgFormatselected == "jpg") {
-							.Filename <- tclvalue(tkgetSaveFile(filetypes="{{Jpeg Image Files} {.jpg}} {{All files} *}"))
-							if (!nchar(.Filename))
-								tkfocus(CEGraphWindow)
-							else {
-								ans <- substr(.Filename,nchar(.Filename)-3,nchar(.Filename))
-								if ( ans != ".jpg" ) .Filename <- paste(.Filename, ".jpg", sep="")
-										
-								if (!file.exists(.Filename)) file.remove(.Filename)
-								
-								plot.it.to.image(AllTreatEffectiveness, AllTreatCost, treatments.colors.plot, treatments.label.plot,
-													.Filename = .Filename, type = type, img.type = ImgFormatselected,
-													img.quality = ImgQualityselected)
-							}
-						} else {
-							.Filename <- tclvalue(tkgetSaveFile(filetypes="{{Bitmap Image Files} {.bmp}} {{All files} *}"))
-							if (!nchar(.Filename))
-								tkfocus(CEGraphWindow)
-							else {
-								ans <- substr(.Filename,nchar(.Filename)-3,nchar(.Filename))
-								if ( ans != ".bmp" ) .Filename <- paste(.Filename, ".bmp", sep="")
-										
-								if (!file.exists(.Filename)) file.remove(.Filename)
-								
-								plot.it.to.image(AllTreatEffectiveness, AllTreatCost, treatments.colors.plot, treatments.label.plot,
-													.Filename = .Filename, type = type, img.type = ImgFormatselected)
-							}
-						}
-					}
-					tkdestroy(exportImgGraphWindow)
-					tkwm.deiconify(CEGraphWindow)
-					tkfocus(CEGraphWindow)
-				}
-				
-				OnCancel <- function()
-				{
-					tkdestroy(exportImgGraphWindow)
-					tkwm.deiconify(CEGraphWindow)
-					tkfocus(CEGraphWindow)
-				}
-				
-				.Width.but <- 10
-				.Height.but <- 1
-				
-				OK.but <-tkbutton(frameLower,text="OK", width=.Width.but, height=.Height.but, command=OnOK)
-				tkbind(exportImgGraphWindow, "<Return>",OnOK)
-				Cancel.but <-tkbutton(frameLower,text="Cancel", width=.Width.but, height=.Height.but, command=OnCancel)
-				tkbind(exportImgGraphWindow, "<Escape>",OnCancel)
-				tkgrid(OK.but, Cancel.but, sticky = "s", padx = 5, pady = 5, columnspan = 2, sticky = "s")
-				
-				tkbind(rb1, "<Enter>",Onformat)
-				tkbind(rb2, "<Enter>",Onformat)
-				tkbind(rb3, "<Enter>",Onformat)
-				tkbind(rb1, "<Leave>",Onformat)
-				tkbind(rb2, "<Leave>",Onformat)
-				tkbind(rb3, "<Leave>",Onformat)
-				
-				tkgrid(frameOverall)
-				tkfocus(exportImgGraphWindow)
-# 				posiciona.janela.no.mouse(exportImgGraphWindow)
-			}
-			
-		    .Width.but <- 10
-			.Height.but <- 1
-			
-			OK.but <- tkbutton(frameButton,text="OK", width=.Width.but, height=.Height.but, command=OnOK)
-			Export.but <- tkbutton(frameButton,text="Exportar...", width=.Width.but, height=.Height.but, command=OnExportGraphic)
-	
-			tkgrid(OK.but, Export.but, sticky = "s", padx = 5, pady = 5)
-# 			tkconfigure(Export.but, state = "disabled")
-	
-			tkbind(CEGraphWindow, "<Return>", OnOK)
-			tkbind(CEGraphWindow, "<Escape>", OnCancel)
-	
-			tkwm.deiconify(CEGraphWindow)
-			tkfocus(CEGraphWindow)
-			
-		}
-		
-		OnCE.scatterplot <- function() {
-			OnShowIt(type = "CE.scatterplot")
-		}
-		
-		OnAccept.Curve <- function(Alltreatmentstable) {
-			aceptability.sim.window(Alltreatmentstable)
-		}
-		
-		OnSurvival.Curve <- function() {
-			SurvivalData <- Mktable$Survival
-			OnShowIt(type = "Survival.Curve", SurvivalData = SurvivalData)
-		}
-		
-		
-		# Button label
-		label.but1 <- "Custo"
-		label.but2 <- "Efetividade"
-		label.but3 <- "Razão Custo-Efetividade"
-		label.but4 <- "Incrementals"
-		label.but5 <- "Custo-Efetividade"
-		label.but6 <- "Scatterplot C-E"
-		label.but7 <- "Curva de aceitabilidade"
-		label.but8 <- "Curva de sobrevivência"
-			
-	    .Width.but <- max( c( nchar(label.but1), nchar(label.but2), nchar(label.but3), nchar(label.but4), 
-	    					nchar(label.but5), nchar(label.but6), nchar(label.but7)) )
-		.Height.but <- 1
-		
-		# The buttons
-		Distrib.cost.but <- tkbutton(frameDistribution, text = label.but1, 
-			width=.Width.but, height=.Height.but, command = OnDistrib.cost)
-		Distrib.effectiveness.but <- tkbutton(frameDistribution,text = label.but2, 
-			width=.Width.but, height=.Height.but, command = OnDistrib.effectiveness)
-		Distrib.CER.but <- tkbutton(frameDistribution,text = label.but3, 
-			width =.Width.but, height=.Height.but, command = OnDistrib.CER)
-		Distrib.incrementals.but <- tkbutton(frameDistribution, text = label.but4, 
-			width=.Width.but, height=.Height.but, command = OnDistrib.incrementals)
-		CE.but <- tkbutton(frameOtherGraphs, text = label.but5, 
-			width=.Width.but, height=.Height.but, command = OnCE)
-		CE.scatterplot.but <- tkbutton(frameOtherGraphs,text=label.but6, 
-			width=.Width.but, height=.Height.but, command = OnCE.scatterplot)
-		Accept.Curve.but <- tkbutton(frameOtherGraphs,text=label.but7, 
-			width=.Width.but, height=.Height.but, command = function() OnAccept.Curve(Alltreatmentstable))
-		Survival.Curve.but <- tkbutton(frameOtherGraphs,text=label.but8, 
-			width=.Width.but, height=.Height.but, command = OnSurvival.Curve)
-		
-		tkgrid(Distrib.cost.but, sticky = "s", padx = 5, pady = 5)
-		tkgrid(Distrib.effectiveness.but, sticky = "s", padx = 5, pady = 5)
-		tkgrid(Distrib.CER.but, sticky = "s", padx = 5, pady = 5)
-		tkgrid(Distrib.incrementals.but, sticky = "s", padx = 5, pady = 5)
-		tkgrid(CE.but, sticky = "s", padx = 5, pady = 5)
-		tkgrid(CE.scatterplot.but, sticky = "s", padx = 5, pady = 5)
-		tkgrid(Accept.Curve.but, sticky = "s", padx = 5, pady = 5)
-		tkgrid(Survival.Curve.but, sticky = "s", padx = 5, pady = 5)
-		
-		OK.but <- tkbutton(frameLower,text="OK", width=.Width.but, height=.Height.but, command=OnOK)
-		Cancel.but <- tkbutton(frameLower,text="Cancel", width=.Width.but, height=.Height.but, command=OnCancel)
-			
-		tkgrid(OK.but, Cancel.but, sticky = "s", padx = 5, pady = 5)
-		
-		tkgrid(frameDistribution,sticky="nwe")
-		tkgrid(frameOtherGraphs,sticky="nwe")
-		tkgrid(frameResume,sticky="nwe")
-		tkgrid(frameLower, sticky = "s")
-		tkgrid(frameOverall)
-	
-		tkbind(graphsimulationWindow, "<Return>", OnOK)
-		tkbind(graphsimulationWindow, "<Escape>", OnCancel)
-			
-		tkfocus(graphsimulationWindow)
-# OnGraph ----------------------------------------------------------------------------------------------------------------		tkfocus(summarysimulationWindow)
-
+		onGraph.summary.simwindow(Mktable, Alltreatmentstable, selected.treatment)
 	}
 	
 	OnText <- function() {
@@ -1126,14 +410,14 @@ function(Simlist, tempo1 = Sys.time(), tempo2 = Sys.time(), CicloVal, tipo.nodo 
 		frameButtons <- tkframe(statsSWindow, relief="groove", borderwidth = 0)
 		
 		OnNM <- function() {
-			WTPVal <- as.integer(tclvalue(WTPvar))
+			WTPVal <- as.numeric(tclvalue(WTPvar))
 			
 			selected.treatment <- treatments.sim[1]
 			Mktable <- Simlist[[selected.treatment]]
 			# The NMB -----------------------------------------------------------------------
 			# Remover esta linha se sumarizar saídas de funções de simulação
-			DataCost <- apply(Mktable$Cost,2,sum)
-			DataEffectiveness <- apply(Mktable$Effectiveness,2,sum)
+			DataCost <- apply(Mktable$Cost,2,sum, na.rm = TRUE)
+			DataEffectiveness <- apply(Mktable$Effectiveness,2,sum, na.rm = TRUE)
 			Data <- DataEffectiveness * WTPVal - DataCost
 			NMBtable <- data.frame( Cost = DataCost, 
 									Effectiveness = DataEffectiveness, 
@@ -1148,8 +432,8 @@ function(Simlist, tempo1 = Sys.time(), tempo2 = Sys.time(), CicloVal, tipo.nodo 
 					
 					# The NMB -----------------------------------------------------------------------
 					# Remover esta linha se sumarizar saídas de funções de simulação
-					DataCost <- apply(Mktable$Cost,2,sum)
-					DataEffectiveness <- apply(Mktable$Effectiveness,2,sum)
+					DataCost <- apply(Mktable$Cost,2,sum, na.rm = TRUE)
+					DataEffectiveness <- apply(Mktable$Effectiveness,2,sum, na.rm = TRUE)
 					Data <- DataEffectiveness * WTPVal - DataCost
 					
 					newNMBtable <- data.frame( Cost = DataCost, 
@@ -1175,21 +459,21 @@ function(Simlist, tempo1 = Sys.time(), tempo2 = Sys.time(), CicloVal, tipo.nodo 
 		}
 		
 		OnNH <- function() {
-			WTPVal <- as.integer(tclvalue(WTPvar))
+			WTPVal <- as.numeric(tclvalue(WTPvar))
 			
 			selected.treatment <- treatments.sim[1]
 			Mktable <- Simlist[[selected.treatment]]
-			# The NMB -----------------------------------------------------------------------
+			# The NHB -----------------------------------------------------------------------
 			# Remover esta linha se sumarizar saídas de funções de simulação
-			DataCost <- apply(Mktable$Cost,2,sum)
-			DataEffectiveness <- apply(Mktable$Effectiveness,2,sum)
-			Data <- DataEffectiveness * WTPVal - DataCost
+			DataCost <- apply(Mktable$Cost,2,sum, na.rm = TRUE)
+			DataEffectiveness <- apply(Mktable$Effectiveness,2,sum, na.rm = TRUE)
+			Data <- DataEffectiveness - DataCost / WTPVal
 			
-			NMBtable <- data.frame( Cost = DataCost, 
+			NHBtable <- data.frame( Cost = DataCost, 
 									Effectiveness = DataEffectiveness, 
-									NMB = Data)
-			namesvariables <- c(".Cost", ".Effectiveness", ".NMB")
-			names(NMBtable) <- paste(selected.treatment,namesvariables,sep="")
+									NHB = Data)
+			namesvariables <- c(".Cost", ".Effectiveness", ".NHB")
+			names(NHBtable) <- paste(selected.treatment,namesvariables,sep="")
 								
 			if (length(treatments.sim) > 1) {					
 				for (i in 2:length(treatments.sim) ) {
@@ -1198,28 +482,28 @@ function(Simlist, tempo1 = Sys.time(), tempo2 = Sys.time(), CicloVal, tipo.nodo 
 					
 					# The NMB -----------------------------------------------------------------------
 					# Remover esta linha se sumarizar saídas de funções de simulação
-					DataCost <- apply(Mktable$Cost,2,sum)
-					DataEffectiveness <- apply(Mktable$Effectiveness,2,sum)
-					Data <- DataEffectiveness * WTPVal - DataCost
+					DataCost <- apply(Mktable$Cost,2,sum, na.rm = TRUE)
+					DataEffectiveness <- apply(Mktable$Effectiveness,2,sum, na.rm = TRUE)
+					Data <- DataEffectiveness - DataCost / WTPVal
 					
-					newNMBtable <- data.frame( Cost = DataCost, 
+					newNHBtable <- data.frame( Cost = DataCost, 
 											Effectiveness = DataEffectiveness, 
-											NMB = Data)
-					names(newNMBtable) <- paste(selected.treatment,namesvariables,sep="")
+											NHB = Data)
+					names(newNHBtable) <- paste(selected.treatment,namesvariables,sep="")
 					# Guarda as informações importantes
-					NMBtable <- abind(NMBtable, newNMBtable, along=2)
+					NHBtable <- abind(NHBtable, newNHBtable, along=2)
 					
 				}
 			}
 			Trial <- 1:length(DataCost)
-			NMBtable <- abind(Trial, NMBtable, along=2)
-			names(NMBtable) <- c("Trial", names(NMBtable))
+			NHBtable <- abind(Trial, NHBtable, along=2)
+			names(NHBtable) <- c("Trial", names(NHBtable))
 			
-			tituloNMB <- "Estatísticas - Net Health Benefits"
-			NMBtable <- as.matrix(NMBtable)
+			tituloNHB <- "Estatísticas - Rede de Benefício Saúde (NHB)"
+			NHBtable <- as.matrix(NHBtable)
 			
-			displayInTable(NMBtable, title = tituloNMB, height=min(10,dim(NMBtable)[1]), width= min(10,dim(NMBtable)[2]),
-							nrow=dim(NMBtable)[1],ncol=dim(NMBtable)[2],
+			displayInTable(NHBtable, title = tituloNHB, height=min(10,dim(NHBtable)[1]), width= min(10,dim(NHBtable)[2]),
+							nrow=dim(NHBtable)[1],ncol=dim(NHBtable)[2],
 							titlerows = FALSE, titlecols = TRUE, editable = FALSE,
 							returntt = FALSE)
 		}
@@ -1230,8 +514,8 @@ function(Simlist, tempo1 = Sys.time(), tempo2 = Sys.time(), CicloVal, tipo.nodo 
 			Mktable <- Simlist[[selected.treatment]]
 			# The CE -----------------------------------------------------------------------
 			# Remover esta linha se sumarizar saídas de funções de simulação
-			DataCost <- apply(Mktable$Cost,2,sum)
-			DataEffectiveness <- apply(Mktable$Effectiveness,2,sum)
+			DataCost <- apply(Mktable$Cost,2,sum, na.rm = TRUE)
+			DataEffectiveness <- apply(Mktable$Effectiveness,2,sum, na.rm = TRUE)
 			
 			CEtable <- data.frame( Cost = DataCost, 
 									Effectiveness = DataEffectiveness, 
@@ -1246,8 +530,8 @@ function(Simlist, tempo1 = Sys.time(), tempo2 = Sys.time(), CicloVal, tipo.nodo 
 					
 					# The CE -----------------------------------------------------------------------
 					# Remover esta linha se sumarizar saídas de funções de simulação
-					DataCost <- apply(Mktable$Cost,2,sum)
-					DataEffectiveness <- apply(Mktable$Effectiveness,2,sum)
+					DataCost <- apply(Mktable$Cost,2,sum, na.rm = TRUE)
+					DataEffectiveness <- apply(Mktable$Effectiveness,2,sum, na.rm = TRUE)
 					
 					newCEtable <- data.frame( Cost = DataCost, 
 											Effectiveness = DataEffectiveness, 
@@ -1271,12 +555,17 @@ function(Simlist, tempo1 = Sys.time(), tempo2 = Sys.time(), CicloVal, tipo.nodo 
 							returntt = FALSE)
 		}
 				
-		.Width.but <- 18
-		.Height.but <- 1
 		
-		NM.but <-tkbutton(frameOverall,text="Net monetary benefit", width=.Width.but, height=.Height.but, command=OnNM)
-		NH.but <-tkbutton(frameOverall,text="Net health benefit", width=.Width.but, height=.Height.but, command=OnNH)
-		CE.but <-tkbutton(frameOverall,text="Custo-Efetividade", width=.Width.but, height=.Height.but, command=OnCE)
+		label1 <- "Rede de Benefício Monetário (NMB)"
+		label2 <- "Rede de Benefício Saúde (NHB)"
+		label3 <- "Custo-Efetividade (CE)"
+		
+		.Width.but <- max(nchar(c(label1, label2, label3))) + 2
+		.Height.but <- 1
+
+		NM.but <-tkbutton(frameOverall,text=label1, width=.Width.but, height=.Height.but, command=OnNM)
+		NH.but <-tkbutton(frameOverall,text=label2, width=.Width.but, height=.Height.but, command=OnNH)
+		CE.but <-tkbutton(frameOverall,text=label3, width=.Width.but, height=.Height.but, command=OnCE)
 		
 		tkgrid(NM.but, sticky = "s", padx = 5, pady = 5)
 		tkgrid(NH.but, sticky = "s", padx = 5, pady = 5)
@@ -1344,8 +633,8 @@ function(Simlist, tempo1 = Sys.time(), tempo2 = Sys.time(), CicloVal, tipo.nodo 
 				Mktable <- Simlist[[selected.treatment]]
 				
 				if (tipo.nodo[selectedpage.number] == "C") {
-					ResumeSim <- data.frame(Cost = apply(Mktable$Cost,2,sum), 
-											Effectiveness = apply(Mktable$Effectiveness,2,sum))
+					ResumeSim <- data.frame(Cost = apply(Mktable$Cost,2,sum, na.rm = TRUE), 
+											Effectiveness = apply(Mktable$Effectiveness,2,sum, na.rm = TRUE))
 					ResumeSim <- data.frame(Trial = 0:(dim(ResumeSim)[1] - 1), ResumeSim)
 					
 					ans <- substr(fileName,nchar(fileName)-3,nchar(fileName))
@@ -1377,8 +666,8 @@ function(Simlist, tempo1 = Sys.time(), tempo2 = Sys.time(), CicloVal, tipo.nodo 
 					if (tipo.nodo[selectedpage.number] == "M") {
 						
 						# Summary Coort
-						ResumeSim <- data.frame(Cost = apply(Mktable$Cost,2,sum), 
-												Effectiveness = apply(Mktable$Effectiveness,2,sum))
+						ResumeSim <- data.frame(Cost = apply(Mktable$Cost,2,sum, na.rm = TRUE), 
+												Effectiveness = apply(Mktable$Effectiveness,2,sum, na.rm = TRUE))
 						ResumeSim <- data.frame(Individual = 1:(dim(ResumeSim)[1]), ResumeSim)
 						
 						ans <- substr(fileName,nchar(fileName)-3,nchar(fileName))
@@ -1477,7 +766,7 @@ function(Simlist, tempo1 = Sys.time(), tempo2 = Sys.time(), CicloVal, tipo.nodo 
 		.Height.but <- 1
 		
 		OK.but <-tkbutton(frameLower,text="OK", width=.Width.but, height=.Height.but, command=OnOK)
-		Cancel.but <-tkbutton(frameLower,text="Cancel", width=.Width.but, height=.Height.but, command=OnCancel)
+		Cancel.but <-tkbutton(frameLower,text="Cancelar", width=.Width.but, height=.Height.but, command=OnCancel)
 		
 		tkgrid(OK.but, Cancel.but, sticky = "s", padx = 5, pady = 5)
 		
@@ -1492,8 +781,6 @@ function(Simlist, tempo1 = Sys.time(), tempo2 = Sys.time(), CicloVal, tipo.nodo 
 	}
 	
 	OnStatsRep <- function() {
-		
-		
 		StatsData <- Alltreatmentstable[ order(Alltreatmentstable$Treatment, Alltreatmentstable$Data),]
 		assign("StatsData", StatsData, .EnvironmentArvoRe)
 		
@@ -1512,7 +799,7 @@ function(Simlist, tempo1 = Sys.time(), tempo2 = Sys.time(), CicloVal, tipo.nodo 
 		frameButtons <- tkframe(statsSWindow, relief="groove", borderwidth = 0)
 		
 		OnNM <- function() {
-			WTPVal <- as.integer(tclvalue(WTPvar))
+			WTPVal <- as.numeric(tclvalue(WTPvar))
 			
 			NMBtable <- data.frame(Treatment = array(,0), Mean = array(,0), 
 								Variance = array(,0), Sd = array(,0), Median = array(,0), 
@@ -1525,9 +812,10 @@ function(Simlist, tempo1 = Sys.time(), tempo2 = Sys.time(), CicloVal, tipo.nodo 
 				
 				# The NMB -----------------------------------------------------------------------
 				# Remover esta linha se sumarizar saídas de funções de simulação
-				Data <- apply(Mktable$Effectiveness,2,sum) * WTPVal - apply(Mktable$Cost,2,sum)
+				Data <- apply(Mktable$Effectiveness,2,sum, na.rm = TRUE) * 
+                        WTPVal - apply(Mktable$Cost,2,sum, na.rm = TRUE)
 				
-				statisticsData <- summary(Data)
+				statisticsData <- summary(Data, na.rm = TRUE)
 				
 				meanData <- statisticsData[4]
 				varData <- var(Data, na.rm = TRUE, use = "complete.obs")
@@ -1546,7 +834,7 @@ function(Simlist, tempo1 = Sys.time(), tempo2 = Sys.time(), CicloVal, tipo.nodo 
 				NMBtable <- abind(NMBtable, line.data.summary, along=1)
 			}
 			
-			tituloNMB <- "Estatísticas - Net Monetary Benefits"
+			tituloNMB <- "Estatísticas - Rede de Benefício Monetário (NMB)"
 			NMBtable <- as.matrix(NMBtable)
 			
 			displayInTable(NMBtable, title = tituloNMB, height=min(10,dim(NMBtable)[1]), width= min(10,dim(NMBtable)[2]),
@@ -1556,7 +844,7 @@ function(Simlist, tempo1 = Sys.time(), tempo2 = Sys.time(), CicloVal, tipo.nodo 
 		}
 		
 		OnNH <- function() {
-			WTPVal <- as.integer(tclvalue(WTPvar))
+			WTPVal <- as.numeric(tclvalue(WTPvar))
 			
 			NMBtable <- data.frame(Treatment = array(,0), Mean = array(,0), 
 								Variance = array(,0), Sd = array(,0), Median = array(,0), 
@@ -1569,9 +857,10 @@ function(Simlist, tempo1 = Sys.time(), tempo2 = Sys.time(), CicloVal, tipo.nodo 
 				
 				# The NHB -----------------------------------------------------------------------
 				# Remover esta linha se sumarizar saídas de funções de simulação
-				Data <- apply(Mktable$Effectiveness,2,sum) * WTPVal - apply(Mktable$Cost,2,sum)
+				Data <- apply(Mktable$Effectiveness,2,sum, na.rm = TRUE) * 
+                        apply(Mktable$Cost,2,sum, na.rm = TRUE) / WTPVal
 				
-				statisticsData <- summary(Data)
+				statisticsData <- summary(Data, na.rm = TRUE)
 				
 				meanData <- statisticsData[4]
 				varData <- var(Data, na.rm = TRUE, use = "complete.obs")
@@ -1590,7 +879,7 @@ function(Simlist, tempo1 = Sys.time(), tempo2 = Sys.time(), CicloVal, tipo.nodo 
 				NMBtable <- abind(NMBtable, line.data.summary, along=1)
 			}
 			
-			tituloNMB <- "Estatísticas - Net Monetary Benefits"
+			tituloNMB <- "Estatísticas - Rede de Benefício Monetário (NMB)"
 			NMBtable <- as.matrix(NMBtable)
 			
 			displayInTable(NMBtable, title = tituloNMB, height=min(10,dim(NMBtable)[1]), width= min(10,dim(NMBtable)[2]),
@@ -1601,10 +890,6 @@ function(Simlist, tempo1 = Sys.time(), tempo2 = Sys.time(), CicloVal, tipo.nodo 
 		}
 
 		OnCE <- function() {
-# 			ResumeData <- as.data.frame( t(StatsData[,2:dim(StatsData)[2]]) )
-# 			names(ResumeData) <- StatsData[,1]
-# 			ResumeData <- as.matrix(ResumeData)
-
 			tituloCE <- "Estatísticas - Análise de Custo-Efetividade"
 			StatsData <- as.matrix(StatsData)
 			
@@ -1625,12 +910,12 @@ function(Simlist, tempo1 = Sys.time(), tempo2 = Sys.time(), CicloVal, tipo.nodo 
 		.Width.but <- 40
 		.Height.but <- 1
 		
-		NM.but <-tkbutton(frameOverall,text="Net monetary benefit", width=.Width.but, height=.Height.but, command=OnNM)
-		NH.but <-tkbutton(frameOverall,text="Net health benefit", width=.Width.but, height=.Height.but, command=OnNH)
-		CE.but <-tkbutton(frameOverall,text="Custo-Efetividade", width=.Width.but, height=.Height.but, command=OnCE)
+		NM.but <-tkbutton(frameOverall,text="Rede de Benefício Monetário (NMB)", width=.Width.but, height=.Height.but, command=OnNM)
+		NH.but <-tkbutton(frameOverall,text="Rede de Benefício Saúde (NHB)", width=.Width.but, height=.Height.but, command=OnNH)
+		CE.but <-tkbutton(frameOverall,text="Custo-Efetividade (CE)", width=.Width.but, height=.Height.but, command=OnCE)
 		ICER.but <-tkbutton(frameOverall,text="Razão adicional de C-E (ICER)", width=.Width.but, height=.Height.but, 
 					command= function() OnICER(StatsData))
-		INB.but <-tkbutton(frameOverall,text="Incremento da rede de benfícios (INB)", width=.Width.but, 
+		INB.but <-tkbutton(frameOverall,text="Incremento da rede de benefícios (INB)", width=.Width.but, 
 					height=.Height.but, command= function() OnINB(StatsData))
 		
 		
@@ -1665,17 +950,22 @@ function(Simlist, tempo1 = Sys.time(), tempo2 = Sys.time(), CicloVal, tipo.nodo 
 # 		Cancel.but <-tkbutton(framebutton,text="OK", width=.Width.but, height=.Height.but, command=OnOK)
 		
 		tkgrid(OK.but, sticky = "s", columnspan = 2, padx = 5, pady = 5)
-		
+		tkfocus(statsSWindow)
 	}
 	
 	.Width.but <- 18
 	.Height.but <- 1
 	
-	OK.but <-tkbutton(framebutton,text="OK", width=.Width.but, height=.Height.but, command=OnOK)
-	StatsRep.but <-tkbutton(framePanelButton,text="Estatísticas", width=.Width.but, height=.Height.but,command=OnStatsRep)
-	Graph.but <-tkbutton(framePanelButton,text="Gráficos", width=.Width.but, height=.Height.but,command=OnGraph)
-	TextRep.but <-tkbutton(framePanelButton,text="Relatório Texto", width=.Width.but, height=.Height.but,command=OnText)
-	Export.but <-tkbutton(framePanelButton,text="Exportar Relatório", width=.Width.but, height=.Height.but,command=OnExport)
+	OK.but <-tkbutton(framebutton,text="OK", width=.Width.but, height=.Height.but, 
+							command=OnOK)
+	StatsRep.but <-tkbutton(framePanelButton,text="Estatísticas", width=.Width.but, height=.Height.but,
+							command=OnStatsRep)
+	Graph.but <-tkbutton(framePanelButton,text="Gráficos", width=.Width.but, height=.Height.but, 
+							command = function() OnGraph(Mktable, Alltreatmentstable) )
+	TextRep.but <-tkbutton(framePanelButton,text="Relatório Texto", width=.Width.but, height=.Height.but,
+							command=OnText)
+	Export.but <-tkbutton(framePanelButton,text="Exportar Relatório", width=.Width.but, height=.Height.but,
+							command=OnExport)
 	
 	tkbind(summarysimulationWindow, "<Return>",OnOK)
 	tkbind(summarysimulationWindow, "<Escape>",OnOK)

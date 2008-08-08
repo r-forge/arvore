@@ -42,6 +42,7 @@ function(typemodel) {
 	} else {
 		cat("Error!! \n")	
 	}
+	refreshF5()
 	assign(".workstatus", "unsaved", .EnvironmentArvoRe)
   }
 }

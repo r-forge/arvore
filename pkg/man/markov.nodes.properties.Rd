@@ -160,7 +160,7 @@ function(TheTree, .EnvironmentArvoRe) {
 				tkfocus(tt)
 			}
 			
-			Cancel.but <-tkbutton(markovnodeWindow, width=.Width.but, height=.Height.but, text="Cancel", command=OnCancel)
+			Cancel.but <-tkbutton(markovnodeWindow, width=.Width.but, height=.Height.but, text="Cancelar", command=OnCancel)
 			
 			tkbind(markovnodeWindow, "<Escape>",OnCancel)
 	
