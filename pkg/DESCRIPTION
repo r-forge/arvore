@@ -1,0 +1,14 @@
+Package: ArvoRe
+Type: Package
+Title: ArvoRe
+Version: 0.1.6
+Date: 2008-06-24
+Author: Isaias V. Prestes <isaias.prestes@ufrgs.br> and Suzi A. Camey <camey@ufrgs.br>
+Maintainer: Isaias V. Prestes <isaias.prestes@gmail.com>
+Depends: R (>= 2.6.0), tcltk, abind, grid, gplots
+Description: A platform-independent Cost-Effectiveness package for R, 
+        using a GUI (graphical user interface) based on the tcltk 
+        package.
+License: GPL (>= 2)
+URL: http://www.r-project.org,
+        http://www.mat.ufrgs.br/~camey/ArvoRe/
