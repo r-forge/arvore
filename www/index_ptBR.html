@@ -1,0 +1,518 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html lang="pt-br"><head>
+
+
+
+
+
+
+
+  
+  
+  
+  
+  
+  <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type"><title>ÁrvoRe - Análise de Custo-Efetividade no R</title>
+
+
+
+
+
+  
+  
+  
+  
+  
+  
+  
+  <meta content="Isaías Valente Prestes" name="author">
+
+  
+  <meta content="ArvoRe - Análise de Custo-Efetividade para o R" name="description"></head><body>
+
+
+
+
+
+<div style="text-align: center;"><img style="width: 200px; height: 203px;" alt="árvoRe" src="arvore.png"><br>
+
+
+
+
+
+</div>
+
+
+
+
+
+<div style="text-align: center;"><img style="width: 296px; height: 87px;" alt="árvore title" src="ArvoReletras.png"><br>
+
+
+
+
+
+</div>
+
+
+<div style="text-align: center;"><span style="font-family: Helvetica,Arial,sans-serif;">Language</span><br>
+
+
+</div>
+
+
+<table style="width: 100px; text-align: left; margin-left: auto; margin-right: auto;" border="0" cellpadding="2" cellspacing="2">
+
+
+  <tbody>
+
+
+    <tr>
+
+
+      <td style="text-align: center;"><img style="width: 30px; height: 30px;" alt="Versão em Português brasileiro" title="Versão em Português brasileiro" src="brasileiro.gif"></td>
+
+
+      <td><a href="index.html"><img style="border: 0px solid ; width: 30px; height: 30px;" alt="English version" title="English version" src="ingles.gif"></a></td>
+
+
+    </tr>
+
+
+  
+  
+  </tbody>
+</table>
+
+
+&nbsp;
+<p class="MsoNormal" style="text-align: justify; text-indent: 35.4pt; line-height: 150%;">
+
+</p>
+
+
+
+
+
+<p class="MsoNormal" style="text-align: justify; text-indent: 35.4pt; line-height: 150%; font-family: Helvetica,Arial,sans-serif;"><span style="font-size: 11pt; line-height: 150%;">O
+pacote <span style="color: rgb(0, 153, 0); font-weight: bold;">ArvoRe</span> é uma implementação de Análise de Custo-Efetividade (ACE) para o <span style="font-weight: bold; color: rgb(0, 0, 153);">R</span>
+orientada a computar
+problemas que envolvam modelos de decisão simples e modelos de
+cadeias de
+Markov. O seu uso se dá exclusivamente por meio de uma interface
+gráfica para o
+usuário (GUI) desenvolvida em Tcl/Tk. Essa interface
+gráfica simplifica a
+tarefa de criação da árvore de decisão e a
+sua manipulação, como por exemplo, adição
+de nodos, definição de valores de probabilidade,
+configuração de tipo de nodo,
+etc. <o:p></o:p></span></p>
+
+
+
+
+
+
+
+<p class="MsoNormal" style="text-align: justify; text-indent: 35.4pt; line-height: 150%; font-family: Helvetica,Arial,sans-serif;"><span style="font-size: 11pt; line-height: 150%;">Os gráficos,
+tabelas e estatísticas de resumo mais importantes para a realização de uma ACE
+estão disponíveis por meio de janelas, as quais os concentram em um único
+local. Pode-se exportar gráficos para arquivos de imagem nos formatos PNG, JPG
+e BMP. Algumas tabelas com resumo estatístico de um problema de ACE executado
+nesse pacote podem ser exportadas para arquivos no formato CSV (<i style="">comma separated values</i>) ou TXT (<i style="">text plain</i>). Outra implementação
+importante do <span style="font-weight: bold; color: rgb(0, 153, 0);">ArvoRe</span> é a solução de problemas de ACE que envolvem cadeias de
+Markov. Esses problemas são resolvidos por meio de simulação Monte Carlo de
+primeira ordem. Um modelo criado para um problema de Custo-Efetividade no
+<span style="font-weight: bold; color: rgb(0, 153, 0);">ArvoRe</span> pode ser salvo em um arquivo com extensão ARV. Os principais ajustes
+feitos pelo usuário no programa &#8211; como tipo de árvore a se exibir, definições
+do que deve ser exibido &#8211; também são conservados nesse arquivo de extensão ARV.</span></p>
+
+
+
+
+
+<p class="MsoNormal" style="text-align: justify; text-indent: 35.4pt; line-height: 150%; font-weight: bold; color: rgb(0, 153, 0); font-family: Helvetica,Arial,sans-serif;">REQUISITOS</p>
+
+
+
+
+
+<ul style="margin-left: 40px; font-family: Helvetica,Arial,sans-serif;">
+
+
+
+
+
+  <li><span style="font-weight: bold; color: rgb(0, 0, 153);">R</span> 2.6.2 ou mais recente (agora compatível com o R que utiliza a Tcl/Tk 8.5)</li>
+
+
+
+
+
+</ul>
+
+
+
+
+
+<div style="margin-left: 120px;">
+
+<p class="MsoNormal" style="text-align: justify; text-indent: 35.45pt; line-height: 150%;"><span style="font-size: 11pt; line-height: 150%; font-family: Arial;">Para se executar o <span style="font-weight: bold; color: rgb(0, 153, 0);">ArvoRe</span>, é necessário o <span style="font-weight: bold; color: rgb(0, 0, 153);">R</span> em
+versão 2.6.2 ou superior. <o:p></o:p></span></p>
+
+
+
+
+
+
+</div>
+
+
+
+
+
+<ul style="margin-left: 40px; font-family: Helvetica,Arial,sans-serif;">
+
+
+
+
+
+  <li>Pacotes <span style="font-weight: bold;">abind</span>, <span style="font-weight: bold;">grid</span>, <span style="font-weight: bold;">gplots, tcltk</span> e <span style="font-weight: bold;">tcltk2</span></li>
+
+
+
+
+
+</ul>
+
+
+
+
+
+<div style="margin-left: 120px;">
+
+<p class="MsoNormal" style="text-align: justify; text-indent: 35.45pt; line-height: 150%;"><span style="font-size: 11pt; line-height: 150%; font-family: Arial;">Além
+dos requisitos supracitados, para se executar o <span style="font-weight: bold; color: rgb(0, 153, 0);">ArvoRe</span>, é necessário o <span style="font-weight: bold; color: rgb(0, 0, 153);">R</span> em
+versão 2.6.2 e que os pacotes <span style="font-weight: bold;">abind</span>, <span style="font-weight: bold;">grid</span>, <span style="font-weight: bold;">gplots</span>, <span style="font-weight: bold;">tcltk</span> e <span style="font-weight: bold;">tcltk2</span> se encontrem instalados
+no sistema. Baixe estes pacotes no </span><span style="font-size: 11pt; font-family: Arial;"><i style="">Comprehensive R Archive Network</i>,
+CRAN </span><span style="font-size: 11pt; font-family: Arial;"><a href="http://www.r-project.org/">http://www.R-project.org</a>
+.&nbsp;</span></p>
+
+
+
+
+
+
+</div><br>
+<p class="MsoNormal" style="text-align: justify; text-indent: 35.4pt; line-height: 150%; color: rgb(0, 153, 0); font-weight: bold; font-family: Helvetica,Arial,sans-serif;">DESENVOLVIMENTO</p>
+
+
+
+
+
+<p class="MsoNormal" style="text-align: justify; text-indent: 35.4pt; line-height: 150%; margin-left: 40px; font-family: Helvetica,Arial,sans-serif;">O <span style="color: rgb(0, 153, 0); font-weight: bold;">ArvoRe</span><span style="font-weight: bold;"> </span>é
+desenvolvido através de um sistema de SVN na R-Forge. Qualquer
+pessoa pode contribuir com a melhoria e/ou desenvolvimento&nbsp;do seu
+código ao se inscrever na R-Forge e escolher participar do <a href="http://r-forge.r-project.org/projects/arvore" target="_blank">projeto ArvoRe</a>.</p>
+
+
+
+<p class="MsoNormal" style="text-align: justify; text-indent: 35.4pt; line-height: 150%; margin-left: 40px; font-family: Helvetica,Arial,sans-serif;">Uma cópia mais recente e instável deste pacote pode ser diretamente instalada no <span style="font-weight: bold; color: rgb(0, 0, 153);">R</span> com o comando&nbsp;</p>
+
+
+
+<p class="MsoNormal" style="text-indent: 35.4pt; line-height: 150%; margin-left: 40px; font-family: Helvetica,Arial,sans-serif; text-align: center;"><strong><code>install.packages("<i>arvore</i>",repos="http://R-Forge.R-project.org")</code></strong></p>
+
+
+
+<p class="MsoNormal" style="text-align: justify; text-indent: 35.4pt; line-height: 150%; margin-left: 40px; font-family: Helvetica,Arial,sans-serif;"><strong><code></code></strong>Versões de desenvolvimento, a "latest snapshot", podem ser adquiridas abaixo.</p>
+
+
+
+<p class="MsoNormal" style="text-indent: 35.4pt; line-height: 150%; margin-left: 40px; font-family: Helvetica,Arial,sans-serif; text-align: center;"><a href="http://r-forge.r-project.org/snapshots.php?group_id=211">scm-latest.tar.gz</a></p>
+
+
+
+<p class="MsoNormal" style="text-align: justify; text-indent: 35.4pt; line-height: 150%; margin-left: 40px; font-family: Helvetica,Arial,sans-serif;"> </p>
+
+
+
+<p class="MsoNormal" style="text-align: justify; text-indent: 35.4pt; line-height: 150%; color: rgb(0, 153, 0); font-weight: bold; font-family: Helvetica,Arial,sans-serif;">REFERÊNCIA / AJUDA</p>
+
+
+
+
+
+
+<p class="MsoNormal" style="text-align: justify; text-indent: 35.4pt; line-height: 150%; margin-left: 40px; font-family: Helvetica,Arial,sans-serif;"><span style="font-size: 11pt; line-height: 150%; font-family: Arial;"></span>Você pode ler o artigo&nbsp;"<a href="outros/TCCarticle.pdf" target="_blank">Implementação de uma interface gráfica para Análise
+de Custo Efetividade no R</a>" para solucionar problemas na instalação e conhecer um pouco mais sobre Análise de Custo Efetividade.</p>
+<p class="MsoNormal" style="text-align: justify; text-indent: 35.4pt; line-height: 150%; color: rgb(0, 153, 0); font-weight: bold; font-family: Helvetica,Arial,sans-serif;"></p>
+
+
+
+<p class="MsoNormal" style="text-align: justify; text-indent: 35.4pt; line-height: 150%; color: rgb(0, 153, 0); font-weight: bold; font-family: Helvetica,Arial,sans-serif;">DOWNLOAD</p>
+
+
+
+
+
+<p class="MsoNormal" style="text-align: justify; text-indent: 35.4pt; line-height: 150%; margin-left: 40px; font-family: Helvetica,Arial,sans-serif;">Binário (Windows)</p>
+
+
+
+
+
+<ul style="font-family: Helvetica,Arial,sans-serif;">
+
+
+
+
+
+  
+  
+  
+  
+  
+  <ul>
+
+
+
+
+
+    
+    
+    
+    
+    
+    <ul>
+
+
+
+
+
+      <li><a href="binario/arvoRe_0.1.7.zip">ÁrvoRe versão alpha-0.1.7 (instável)</a></li>
+
+
+
+
+
+    
+    
+    
+    
+    
+    </ul>
+
+
+
+
+
+  
+  
+  
+  
+  
+  </ul>
+
+
+
+
+
+</ul>
+
+
+
+
+
+<p class="MsoNormal" style="text-align: justify; text-indent: 35.4pt; line-height: 150%; margin-left: 40px; font-family: Helvetica,Arial,sans-serif;">Código fonte</p>
+
+
+
+
+
+<ul style="font-family: Helvetica,Arial,sans-serif;">
+
+
+
+
+
+  
+  
+  
+  
+  
+  <ul>
+
+
+
+
+
+    
+    
+    
+    
+    
+    <ul>
+
+
+
+
+
+      <li><a href="source/arvoRe_0.1.7.tar.gz">ÁrvoRe versão alpha-0.1.7 (instável)</a></li>
+
+
+
+
+
+    
+    
+    
+    
+    
+    </ul>
+
+
+
+
+
+  
+  
+  
+  
+  
+  </ul>
+
+
+
+
+
+</ul>
+
+
+
+
+
+<br style="font-family: Helvetica,Arial,sans-serif;">
+
+
+
+
+
+<div style="margin-left: 40px; font-family: Helvetica,Arial,sans-serif;"><span style="font-weight: bold; color: rgb(0, 153, 0);">CONTATO</span><br>
+
+
+
+
+
+
+
+<p class="MsoNormal" style="text-align: justify; line-height: 150%;"><span style="font-size: 11pt; line-height: 150%;">Isaías Prestes,
+Suzi Camey<o:p></o:p></span></p>
+
+
+
+
+
+
+
+<p class="MsoNormal" style="text-align: justify; line-height: 150%;"><span style="font-size: 11pt; line-height: 150%;">Departamento de
+Estatística<o:p></o:p></span></p>
+
+
+
+
+
+
+
+<p class="MsoNormal" style="text-align: justify; line-height: 150%;"><span style="font-size: 11pt; line-height: 150%;">Universidade
+Federal do Rio Grande do Sul<o:p></o:p></span></p>
+
+
+
+
+
+
+
+<p class="MsoNormal" style="text-align: justify; line-height: 150%;"><span style="font-size: 11pt; line-height: 150%;">Rio Grande do Sul,
+Porto Alegre<o:p></o:p></span></p>
+
+
+
+
+
+
+
+<p class="MsoNormal" style="text-align: justify; line-height: 150%;"><span style="font-size: 11pt; line-height: 150%;">Brasil Av. Bento
+Gonçalves, 9500<o:p></o:p></span></p>
+
+
+
+
+
+
+
+<span style="font-size: 11pt;">E-mail:
+<a href="mailto:isaias.prestes@gmail.com">isaias.prestes@gmail.com</a>,
+<a href="mailto:camey@ufrgs.br">camey@ufrgs.br</a><br>
+
+
+
+<br>
+
+
+
+<br>
+
+
+
+</span>
+<div style="text-align: center;"><span style="font-size: 11pt;"><a href="http://r-forge.r-project.org"><img style="border: 0px solid ; width: 210px; height: 54px;" alt="R-Forge logo" src="logo_Rforge.png"></a></span><span style="font-size: 11pt;"></span></div>
+
+
+
+</div>
+
+
+
+
+
+<br style="font-family: Helvetica,Arial,sans-serif;">
+
+
+
+
+
+<span style="font-family: Helvetica,Arial,sans-serif;"><span style="font-family: Helvetica,Arial,sans-serif;"><br>
+
+
+
+
+<br>
+
+
+
+
+
+</span></span>
+<hr style="width: 100%; height: 2px;">
+<div style="text-align: center;"><span style="font-family: Helvetica,Arial,sans-serif;"><span style="font-family: Helvetica,Arial,sans-serif;"></span></span><span style="font-family: Helvetica,Arial,sans-serif;"><span style="font-family: Helvetica,Arial,sans-serif;">Agosto 04, 2008 09:38:28 PM</span></span></div>
+
+
+
+
+
+<div style="text-align: center;"><span style="font-family: Helvetica,Arial,sans-serif;"></span></div>
+
+
+
+
+
+<p class="MsoNormal" style="text-align: justify; text-indent: 35.4pt; line-height: 150%; margin-left: 80px;"><span style="font-size: 11pt; line-height: 150%; font-family: Arial;"><o:p></o:p></span></p>
+
+
+
+
+
+
+</body></html>
