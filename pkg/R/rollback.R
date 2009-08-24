@@ -47,7 +47,7 @@ function(TheTree) {
 			ans.effectiveness[position, i] <- val.expected.effectiveness
 		}	
 	}
-	ans <- list("CE" = ans.ce, "Cost" = ans.cost, "Effectiveness" = ans.effectiveness)
+	ans <- list("CE" = ans.cost/ans.effectiveness , "Cost" = ans.cost, "Effectiveness" = ans.effectiveness)
 	return(ans)
 }
 

@@ -132,7 +132,8 @@ function(Alltreatmentstable) {
 							2 * ( Data.alternative.Cost$CovDcDe[i] ) / 
 										( Data.alternative.Effectiveness$Mean[i] / Data.alternative.Cost$Mean[i] )
 							)
-				print(var.icer)
+# 				print(var.icer)
+				var.icer <- sqrt(var.icer^2)
 				
 				var.icer <- as.numeric(as.character(var.icer))
 				

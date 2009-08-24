@@ -466,7 +466,7 @@ onGraph.summary.simwindow <- function(Mktable, Alltreatmentstable, selected.trea
 			width=.Width.but, height=.Height.but, command = OnDistrib.effectiveness)
 		Distrib.CER.but <- tkbutton(frameDistribution,text = label.but3, 
 			width =.Width.but, height=.Height.but, command = OnDistrib.CER)
-		Distrib.incrementals.but <- tkbutton(frameDistribution, text = label.but4, 
+		Distrib.incrementals.but <- tkbutton(frameDistribution, state = "disabled", text = label.but4, 
 			width=.Width.but, height=.Height.but, command = OnDistrib.incrementals)
 		CE.but <- tkbutton(frameOtherGraphs, text = label.but5, 
 			width=.Width.but, height=.Height.but, command = function() OnCE.Graph.summary.simwindow(Alltreatmentstable))

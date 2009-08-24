@@ -1,17 +1,18 @@
-`arvore` <-
+arvore <-
 function(...) {
 	# Se .ArvoReRunning existe, então o ÁrvoRe já está em execução...
 	if (!exists(".ArvoReRunning", envir = globalenv() )) {
 		# ArvoRe Settings
 		library(tcltk)
+		library(tcltk2)
 		###############################################################################
 		# THE GAME!!
 		###############################################################################
 		# Configuration variables
 		.EnvironmentArvoRe <- globalenv()
 		.EnvironmentArvore.Secure <- new.env(parent = globalenv())
-		.arvore.version <- "Alfa-0.1.4"								# The ArvoRe version
-		.arvore.release.date <- "June 18, 2008 06:43:29 PM "		# The ArvoRe version date
+		.arvore.version <- "Alfa-0.1.7"								# The ArvoRe version
+		.arvore.release.date <- "March 27, 2009 06:43:29 PM "		# The ArvoRe version date
 		.modeltypeArvore <- "CE" 									# Default calculation method "Simple" # "CEA"
 		.workstatus <- "saved"										# File status
 		.opennedfile <- "newfile"									# File name
@@ -49,12 +50,23 @@ function(...) {
 		###############################################################################
 		# The Tk things
 		###############################################################################
-		carregaTclpath()	# Carrega extensões da Tcltk
-		tclRequire("Img")
+#  		carregaTclpath()	# Carrega extensões da Tcltk
+		for (i in 1:length(.libPaths())) {
+			icon.but <- file.path(paste(.libPaths()[i],"/arvoRe/icons/New.png",sep=""))
+			if (file.exists(icon.but)) {
+				caminho <- file.path(paste(.libPaths()[i],"/arvoRe/tklibs/BWidget_1.8.0",sep=""))
+				addTclPath(caminho)
+				caminho <- file.path(paste(.libPaths()[i],"/arvoRe/tklibs/Tktable2.9",sep=""))
+				addTclPath(caminho)
+				caminho <- file.path(paste(.libPaths()[i],"/arvoRe/tklibs/Img1.3",sep=""))
+				addTclPath(caminho)				
+				i <- length(.libPaths()) + 1	# Termina com tudo se já encontrou
+			}
+		}		
+		tclRequire("Tk") # Used in TckTk 8.5
+ 		tclRequire("Img")
 		tclRequire("BWidget")
 		#---------------------------------------------------------------------- 
-		# tclRequire("Tk") # Used in TckTk 8.5
-		
 		# Create a new decision tree
 		new.tree()
 		
@@ -81,7 +93,7 @@ function(...) {
 		
 		# Set max and min size to main ArvoRe window
 		tkwm.minsize(tt,640,480)
-		tkwm.maxsize(tt,1024,768)
+# 		tkwm.maxsize(tt,1024,768)
 		
 		# The Frames
 		frameOverall <- tkframe(tt)
@@ -122,30 +134,30 @@ function(...) {
 		tkadd(topMenu,"cascade",label="Arquivo",menu=fileMenu)
 		
 		editMenu <- tkmenu(topMenu,tearoff=FALSE)
-			tkadd(editMenu,"command",label="Desfazer",command=function() changedofunction(TheTree, .modeltypeArvore, .EnvironmentArvore.Secure))
-			tkadd(editMenu,"command",label="Refazer",command=function() changedofunction(TheTree, .modeltypeArvore, .EnvironmentArvore.Secure))
+			tkadd(editMenu,"command",label="Desfazer", command=function() changedofunction(TheTree, .modeltypeArvore, .EnvironmentArvore.Secure))
+			tkadd(editMenu,"command",label="Refazer", command=function() changedofunction(TheTree, .modeltypeArvore, .EnvironmentArvore.Secure))
 			tkadd(editMenu,"separator")
-			tkadd(editMenu,"command",label="Recortar",command=function() naoimplementado())
-			tkadd(editMenu,"command",label="Copiar",command=function() naoimplementado())
-			tkadd(editMenu,"command",label="Colar",command=function() naoimplementado())
+			tkadd(editMenu,"command",label="Recortar", command=function() naoimplementado())
+			tkadd(editMenu,"command",label="Copiar", command=function() naoimplementado())
+			tkadd(editMenu,"command",label="Colar", command=function() naoimplementado())
 			tkadd(editMenu,"separator")
-			tkadd(editMenu,"command",label="Excluir",command=function() naoimplementado())
+			tkadd(editMenu,"command",label="Excluir", command=function() removenodewindows())
 			tkadd(editMenu,"separator")
-			tkadd(editMenu,"command",label="Recortar sub-árvore",command=function() naoimplementado())
-			tkadd(editMenu,"command",label="Copiar sub-árvore",command=function() naoimplementado())
-			tkadd(editMenu,"command",label="Colar sub-árvore",command=function() naoimplementado())
+			tkadd(editMenu,"command", state="disabled",label="Recortar sub-árvore",command=function() naoimplementado())
+			tkadd(editMenu,"command", state="disabled",label="Copiar sub-árvore",command=function() naoimplementado())
+			tkadd(editMenu,"command", state="disabled",label="Colar sub-árvore",command=function() naoimplementado())
 			tkadd(editMenu,"separator")
-			tkadd(editMenu,"command",label="Excluir sub-árvore",command=function() naoimplementado())
+			tkadd(editMenu,"command",label="Excluir sub-árvore", command=function() removenodewindows())
 			tkadd(editMenu,"separator")
-			tkadd(editMenu,"command",label="Variáveis...",command=function() dialog.variable.window())
+			tkadd(editMenu,"command",label="Variáveis...", command=function() dialog.variable.window())
 			tkadd(editMenu,"separator")
-			tkadd(editMenu,"command",label="Configurações",command=function() properties.tree())
+			tkadd(editMenu,"command",label="Configurações", command=function() properties.tree())
 		tkadd(topMenu,"cascade",label="Editar",menu=editMenu)
 		
 		modelMenu <- tkmenu(topMenu,tearoff=FALSE)
-			tkadd(modelMenu,"command",label="Árvore de decisão simples",command=function() set.model.type("SD") )
+			tkadd(modelMenu,"command",label="Árvore de decisão simples", command=function() set.model.type("SD") )
 			tkadd(modelMenu,"separator")
-			tkadd(modelMenu,"command",label="Árvore de decisão Custo-Efetividade",command=function() set.model.type("CE") )
+			tkadd(modelMenu,"command",label="Árvore de decisão Custo-Efetividade", command=function() set.model.type("CE") )
 		
 		tkadd(topMenu,"cascade",label="Modelo",menu=modelMenu)
 		
@@ -319,7 +331,7 @@ function(...) {
 			icon.but <- file.path(paste(.libPaths()[i],"/arvoRe/icons/Graph.png",sep=""))
 			if (file.exists(icon.but)) {
 				icn <- tkimage.create("photo", file=icon.but)
-				sa.but <- tkbutton(frameBottons, image=icn, width=.Width.img.but, height=.Height.img.but, command=function() sa.1way.window())
+				sa.but <- tkbutton(frameBottons, state="disabled", image=icn, width=.Width.img.but, height=.Height.img.but, command=function() sa.1way.window())
 				tcl("DynamicHelp::add", sa.but, "-type", "balloon", "-text", "Análise de Sensibilidade 1-way")
 			} else {
 				sa.but <- tkbutton(frameBottons, text="Análise de Sensibilidade 1-way", width=.Width.img.but, height=.Height.img.but, command=function() sa.1way.window())
@@ -332,7 +344,7 @@ function(...) {
 			icon.but <- file.path(paste(.libPaths()[i],"/arvoRe/icons/Graph2.png",sep=""))
 			if (file.exists(icon.but)) {
 				icn <- tkimage.create("photo", file=icon.but)
-				sa2.but <- tkbutton(frameBottons, image=icn, width=.Width.img.but, height=.Height.img.but, command=function() sa.2way.window())
+				sa2.but <- tkbutton(frameBottons, state="disabled", image=icn, width=.Width.img.but, height=.Height.img.but, command=function() sa.2way.window())
 				tcl("DynamicHelp::add", sa2.but, "-type", "balloon", "-text", "Análise de Sensibilidade 2-way")
 			} else {
 				sa2.but <- tkbutton(frameBottons, text="Análise de Sensibilidade 2-way", width=.Width.img.but, height=.Height.img.but, command=function() sa.2way.window())
@@ -418,9 +430,11 @@ function(...) {
 		
 		# Send treeWidget addres to .EnvironmentArvoRe
 		assign("treeWidget", treeWidget, .EnvironmentArvoRe)
-
+		
 		theTreeTkArvore(TheTree)
 		
+# 		print(" cheguei aqui ")
+
 		# The Tree Bottons
 		.Height.but <- 2
 		.Width.but <- 16
